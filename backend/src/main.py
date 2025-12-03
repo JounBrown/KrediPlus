@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.config import DEBUG, HOST, PORT
+from src.api.routes.loan_applications import router as loan_applications_router
+
 
 app = FastAPI(
     title="KrediPlus RAG Backend",
@@ -17,6 +19,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(loan_applications_router, prefix="/api/v1")
 
 
 @app.get("/")
