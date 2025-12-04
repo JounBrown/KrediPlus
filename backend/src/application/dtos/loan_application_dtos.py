@@ -74,7 +74,6 @@ class LoanApplicationResponse(BaseModel):
     plazo: int
     estado: str
     created_at: datetime
-    estimated_monthly_payment: Optional[float] = None
     
     class Config:
         from_attributes = True

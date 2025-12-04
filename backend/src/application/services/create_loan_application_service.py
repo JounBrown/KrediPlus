@@ -68,12 +68,6 @@ class CreateLoanApplicationService:
         try:
             created_application = await self._loan_application_repository.create(loan_application)
             
-            # Calculate estimated monthly payment for response
-            estimated_payment = self._calculate_estimated_payment(
-                created_application.monto_solicitado,
-                created_application.plazo
-            )
-            
             # Convert to response DTO
             return LoanApplicationResponse(
                 id=created_application.id,
@@ -85,30 +79,9 @@ class CreateLoanApplicationService:
                 monto_solicitado=created_application.monto_solicitado,
                 plazo=created_application.plazo,
                 estado=created_application.estado,
-                created_at=created_application.created_at,
-                estimated_monthly_payment=estimated_payment
+                created_at=created_application.created_at
             )
             
         except Exception as e:
             raise Exception(f"Error al crear la solicitud: {str(e)}")
     
-    def _calculate_estimated_payment(self, amount: float, term: int, 
-                                   estimated_rate: float = 2.5) -> float:
-        """
-        Calculate estimated monthly payment using a default interest rate
-        
-        Args:
-            amount: Loan amount
-            term: Loan term in months
-            estimated_rate: Estimated monthly interest rate (default 2.5%)
-            
-        Returns:
-            Estimated monthly payment
-        """
-        if estimated_rate <= 0:
-            return amount / term
-        
-        monthly_rate = estimated_rate / 100
-        payment = (amount * monthly_rate * (1 + monthly_rate) ** term) / \
-                 ((1 + monthly_rate) ** term - 1)
-        return round(payment, 2)
