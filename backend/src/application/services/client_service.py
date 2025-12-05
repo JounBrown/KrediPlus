@@ -101,13 +101,13 @@ class ClientService:
             created_at=client.created_at
         )
     
-    async def update_client(self, request: UpdateClientRequest) -> ClientResponse:
+    async def update_client(self, client_id: int, request: UpdateClientRequest) -> ClientResponse:
         """Update client information"""
         
         # Get existing client
-        client = await self._client_repository.get_by_id(request.client_id)
+        client = await self._client_repository.get_by_id(client_id)
         if not client:
-            raise ValueError(f"Cliente con ID {request.client_id} no encontrado")
+            raise ValueError(f"Cliente con ID {client_id} no encontrado")
         
         # Check email uniqueness if changing email
         if request.email and request.email.lower() != client.email.lower():

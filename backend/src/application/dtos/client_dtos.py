@@ -41,7 +41,6 @@ class CreateClientRequest(BaseModel):
 
 class UpdateClientRequest(BaseModel):
     """DTO for updating client information"""
-    client_id: int = Field(..., gt=0)
     nombre_completo: Optional[str] = Field(None, min_length=1, max_length=255)
     email: Optional[str] = Field(None, min_length=5, max_length=255)
     telefono: Optional[str] = Field(None, min_length=7, max_length=20)
@@ -87,4 +86,4 @@ class SearchClientsRequest(BaseModel):
     """DTO for searching clients"""
     search_term: Optional[str] = None  # Busca en nombre o cédula
     skip: int = Field(0, ge=0)
-    limit: int = Field(20, ge=1, le=100)
+    limit: int = Field(20, ge=1, le=10000)  # Límite mucho más alto
