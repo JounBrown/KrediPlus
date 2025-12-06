@@ -1,0 +1,250 @@
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { MoreHorizontal, Search } from 'lucide-react'
+import { useClients } from '../hooks/use-clients'
+
+export function ClientTable() {
+  const {
+    clientSearch,
+    setClientSearch,
+    filteredClients,
+    openDialog,
+    closeDialog,
+    dialogOpen,
+    dialogType,
+    activeClient,
+    formState,
+    handleFieldChange,
+    handleSaveClient,
+    handleDeleteClient,
+  } = useClients()
+
+  return (
+    <section className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-lg font-semibold text-[#0d2f62]">Gestión de Clientes</p>
+          <p className="text-sm text-slate-500">Administra la base de clientes registrados.</p>
+        </div>
+        <Button className="bg-[#f26522] text-white hover:bg-[#d85314]" onClick={() => openDialog('create')}>
+          Agregar cliente
+        </Button>
+      </div>
+
+      <div className="mt-2 flex w-full flex-col gap-2">
+        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Buscar por cédula o nombre
+        </label>
+        <div className="flex items-center gap-2 rounded-2xl border border-[#e2e8f0] bg-[#f1f5f9] px-4 py-3 text-[#0f172a] shadow-inner">
+          <Search className="h-4 w-4 text-[#475569]" />
+          <Input
+            value={clientSearch}
+            onChange={(event) => setClientSearch(event.target.value)}
+            placeholder="Buscar clientes..."
+            className="border-0 bg-transparent text-[#0f172a] placeholder:text-[#475569]/60 focus-visible:ring-0"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+        <Table>
+          <TableHeader className="bg-slate-50">
+            <TableRow>
+              <TableHead className="text-xs font-bold uppercase text-slate-500">Nombre</TableHead>
+              <TableHead className="text-xs font-bold uppercase text-slate-500">Cédula</TableHead>
+              <TableHead className="text-xs font-bold uppercase text-slate-500">Email</TableHead>
+              <TableHead className="text-xs font-bold uppercase text-slate-500">Teléfono</TableHead>
+              <TableHead className="text-xs font-bold uppercase text-slate-500">Dirección</TableHead>
+              <TableHead>
+                <span className="sr-only">Acciones</span>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredClients.map((client) => (
+              <TableRow key={client.id} className="text-sm">
+                <TableCell className="font-semibold text-[#0d2f62]">{client.nombreCompleto}</TableCell>
+                <TableCell>{client.cedula}</TableCell>
+                <TableCell>{client.email}</TableCell>
+                <TableCell>{client.telefono}</TableCell>
+                <TableCell>{client.direccion}</TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                        aria-label="Más acciones"
+                      >
+                        <MoreHorizontal className="h-5 w-5" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => openDialog('view', client)}>
+                        Ver detalles
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => openDialog('edit', client)}>
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600" onClick={() => openDialog('delete', client)}>
+                        Eliminar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Dialog
+        open={dialogOpen && Boolean(dialogType)}
+        onOpenChange={(open) => {
+          if (!open) closeDialog()
+        }}
+      >
+        <DialogContent>
+          {dialogType === 'view' && activeClient ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Detalles del cliente</DialogTitle>
+                <DialogDescription>
+                  Creado el {new Date(activeClient.createdAt).toLocaleString('es-CO')}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 text-sm text-slate-600">
+                <p>
+                  <span className="font-semibold">Nombre:</span> {activeClient.nombreCompleto}
+                </p>
+                <p>
+                  <span className="font-semibold">Cédula:</span> {activeClient.cedula}
+                </p>
+                <p>
+                  <span className="font-semibold">Email:</span> {activeClient.email}
+                </p>
+                <p>
+                  <span className="font-semibold">Teléfono:</span> {activeClient.telefono}
+                </p>
+                <p>
+                  <span className="font-semibold">Fecha de nacimiento:</span> {activeClient.fechaNacimiento}
+                </p>
+                <p>
+                  <span className="font-semibold">Dirección:</span> {activeClient.direccion}
+                </p>
+                <p>
+                  <span className="font-semibold">Info adicional:</span> {activeClient.infoAdicional}
+                </p>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={closeDialog}>
+                  Cerrar
+                </Button>
+              </DialogFooter>
+            </>
+          ) : dialogType === 'delete' && activeClient ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Eliminar cliente</DialogTitle>
+                <DialogDescription>
+                  Esta acción eliminará los registros de {activeClient.nombreCompleto}.
+                </DialogDescription>
+              </DialogHeader>
+              <p className="text-sm text-slate-600">
+                ¿Confirmas que deseas eliminar este cliente? Esta acción no se puede deshacer.
+              </p>
+              <DialogFooter>
+                <Button variant="outline" onClick={closeDialog}>
+                  Cancelar
+                </Button>
+                <Button variant="destructive" onClick={handleDeleteClient}>
+                  Eliminar
+                </Button>
+              </DialogFooter>
+            </>
+          ) : dialogType && (dialogType === 'create' || dialogType === 'edit') ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  {dialogType === 'create' ? 'Agregar cliente' : 'Editar cliente'}
+                </DialogTitle>
+                <DialogDescription>
+                  Completa la información del cliente para continuar.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Input
+                  value={formState.nombreCompleto}
+                  onChange={(event) => handleFieldChange('nombreCompleto', event.target.value)}
+                  placeholder="Nombre completo"
+                />
+                <Input
+                  value={formState.cedula}
+                  onChange={(event) => handleFieldChange('cedula', event.target.value)}
+                  placeholder="Cédula"
+                />
+                <Input
+                  type="email"
+                  value={formState.email}
+                  onChange={(event) => handleFieldChange('email', event.target.value)}
+                  placeholder="Correo electrónico"
+                />
+                <Input
+                  value={formState.telefono}
+                  onChange={(event) => handleFieldChange('telefono', event.target.value)}
+                  placeholder="Teléfono"
+                />
+                <Input
+                  type="date"
+                  value={formState.fechaNacimiento}
+                  onChange={(event) => handleFieldChange('fechaNacimiento', event.target.value)}
+                />
+                <Input
+                  value={formState.direccion}
+                  onChange={(event) => handleFieldChange('direccion', event.target.value)}
+                  placeholder="Dirección"
+                />
+                <Textarea
+                  value={formState.infoAdicional}
+                  onChange={(event) => handleFieldChange('infoAdicional', event.target.value)}
+                  placeholder="Información adicional"
+                  rows={4}
+                />
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={closeDialog}>
+                  Cancelar
+                </Button>
+                <Button className="bg-[#f26522] text-white" onClick={handleSaveClient}>
+                  {dialogType === 'create' ? 'Agregar' : 'Guardar cambios'}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+    </section>
+  )
+}

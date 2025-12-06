@@ -3,21 +3,17 @@ import { Route } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { rootRoute } from './root'
 import { MessageCircle, Send, X } from 'lucide-react'
-import { SiteHeader } from '@/components/layout/site-header'
 import { CreditSimulator } from '@/features/simulator/components/credit-simulator'
 import { defaultSimulatorConfig } from '@/data/simulator-config'
-import { Footer } from '@/components/layout/Footer'
 import { SubmitFormCard } from '@/features/submit-form/components/submit-form-card'
+import { AppLayout } from '@/components/layout/app-layout'
 
 function IndexPage() {
   const [isChatOpen, setIsChatOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-slate-900">
-      <SiteHeader active="home" />
-
-      <main className="space-y-16 pb-16">
-        <section id="clientes" className="bg-gradient-to-br from-white via-[#f9fafb] to-[#f7f7f7] pb-10 pt-8">
+    <AppLayout headerActive="home" mainClassName="space-y-16 pb-16">
+      <section id="clientes" className="bg-gradient-to-br from-white via-[#f9fafb] to-[#f7f7f7] pb-10 pt-8">
           <div className="mx-auto grid max-w-7xl items-start gap-10 px-6 lg:grid-cols-2">
             <div className="space-y-6">
               <div className="rounded-2xl bg-[#0d2f62] p-8 text-white shadow-xl">
@@ -129,7 +125,6 @@ function IndexPage() {
             </div>
           </div>
         </section>
-      </main>
 
       {/* Botón flotante de chatbot */}
       <button
@@ -184,9 +179,7 @@ function IndexPage() {
           </div>
         </>
       )}
-
-      <Footer />
-    </div>
+    </AppLayout>
   )
 }
 
