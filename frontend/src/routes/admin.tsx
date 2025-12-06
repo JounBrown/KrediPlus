@@ -30,7 +30,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ListChecks, MoreHorizontal, Search, Settings, Users, UploadCloud } from 'lucide-react'
-import { CreditSimulator } from '@/components/credit-simulator'
+import { CreditSimulator } from '@/features/simulator/components/credit-simulator'
 import {
   defaultSimulatorConfig,
   initialSimulatorConfigs,
