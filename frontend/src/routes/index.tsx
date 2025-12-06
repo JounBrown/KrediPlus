@@ -19,9 +19,9 @@ import {
   Phone,
   Send,
   ShieldCheck,
-  Users2,
   X,
 } from 'lucide-react'
+import { SiteHeader } from '@/components/layout/site-header'
 
 const currencyFormatter = new Intl.NumberFormat('es-CO', {
   style: 'currency',
@@ -40,45 +40,10 @@ function IndexPage() {
 
   return (
     <div className="min-h-screen bg-[hsl(var(--background))] text-slate-900">
-      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur shadow-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-[#f26522]">
-              <span className="text-xl font-black">K</span>
-            </div>
-            <div className="leading-tight">
-              <p className="text-sm font-semibold text-slate-500">KrediPlus</p>
-              <p className="text-base font-bold text-[#0d2f62]">Soluciones financieras</p>
-            </div>
-          </div>
-
-          <nav className="hidden items-center gap-6 text-sm font-medium text-slate-700 md:flex">
-            <a className="flex items-center gap-1 text-[#f26522]" href="#clientes">
-              <Users2 className="h-4 w-4" /> Clientes 500+
-            </a>
-            <a href="#simulador" className="hover:text-[#0d2f62]">
-              Simulador
-            </a>
-            <a href="#condiciones" className="hover:text-[#0d2f62]">
-              Condiciones
-            </a>
-            <a href="#quienes" className="hover:text-[#0d2f62]">
-              ¿Quiénes Somos?
-            </a>
-            <a href="#contacto" className="hover:text-[#0d2f62]">
-              Contáctanos
-            </a>
-            <a href="#admin" className="hover:text-[#0d2f62]">
-              Administrador
-            </a>
-          </nav>
-
-          <Button className="bg-[#f26522] text-white hover:bg-[#d85314]">Logout</Button>
-        </div>
-      </header>
+      <SiteHeader active="home" />
 
       <main className="space-y-16 pb-16">
-        <section className="bg-gradient-to-br from-white via-[#f9fafb] to-[#f7f7f7] pb-10 pt-8">
+        <section id="clientes" className="bg-gradient-to-br from-white via-[#f9fafb] to-[#f7f7f7] pb-10 pt-8">
           <div className="mx-auto grid max-w-7xl items-start gap-10 px-6 lg:grid-cols-2">
             <div className="space-y-6">
               <div className="rounded-2xl bg-[#0d2f62] p-8 text-white shadow-xl">
