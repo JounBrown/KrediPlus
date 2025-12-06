@@ -1,20 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Route } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Slider } from '@/components/ui/slider'
 import { rootRoute } from './root'
 import {
   CalendarIcon,
-  CheckCircle2,
   MessageCircle,
   Phone,
   Send,
@@ -22,21 +13,18 @@ import {
   X,
 } from 'lucide-react'
 import { SiteHeader } from '@/components/layout/site-header'
-
-const currencyFormatter = new Intl.NumberFormat('es-CO', {
-  style: 'currency',
-  currency: 'COP',
-  maximumFractionDigits: 0,
-})
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { CreditSimulator } from '@/components/credit-simulator'
+import { defaultSimulatorConfig } from '@/data/simulator-config'
 
 function IndexPage() {
-  const [amount, setAmount] = useState(5_000_000)
-  const [term, setTerm] = useState('24')
   const [isChatOpen, setIsChatOpen] = useState(false)
-  const minAmount = 1_000_000
-  const maxAmount = 140_000_000
-
-  const formattedAmount = useMemo(() => currencyFormatter.format(amount), [amount])
 
   return (
     <div className="min-h-screen bg-[hsl(var(--background))] text-slate-900">
@@ -175,64 +163,16 @@ function IndexPage() {
           </div>
         </section>
 
-        <section id="simulador" className="mx-auto grid max-w-7xl items-start gap-10 px-6 md:grid-cols-[1.1fr,0.9fr]">
-          <div className="rounded-3xl bg-white p-8 shadow-xl ring-1 ring-slate-200">
-            <h4 className="text-2xl font-extrabold text-[#0d2f62]">Simula tu crédito aquí</h4>
-            <div className="mt-6 space-y-6">
-              <div className="space-y-2">
-                <p className="text-sm font-semibold text-[#f26522]">Monto</p>
-                <div className="text-lg font-bold text-[#0d2f62]">{formattedAmount}</div>
-                <Slider
-                  value={[amount]}
-                  min={minAmount}
-                  max={maxAmount}
-                  step={100_000}
-                  onValueChange={(value) => setAmount(value[0] ?? amount)}
-                />
-                <div className="flex justify-between text-xs text-slate-500">
-                  <span>{currencyFormatter.format(minAmount)}</span>
-                  <span>{currencyFormatter.format(maxAmount)}</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-sm font-semibold text-[#f26522]">Plazo (meses)</p>
-                <Select value={term} onValueChange={setTerm}>
-                  <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Selecciona plazo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="12">12 meses</SelectItem>
-                    <SelectItem value="24">24 meses</SelectItem>
-                    <SelectItem value="36">36 meses</SelectItem>
-                    <SelectItem value="48">48 meses</SelectItem>
-                    <SelectItem value="60">60 meses</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Button className="w-full bg-[#f26522] text-white hover:bg-[#d85314]">Simular</Button>
-            </div>
-          </div>
-
-          <div className="space-y-6 text-slate-700">
-            <div className="relative">
-              <div className="absolute inset-10 rounded-full bg-[#0d2f62]/10 blur-3xl" aria-hidden />
-              <img
-                src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=720&q=80"
-                alt="Paisaje tranquilo"
-                className="relative mx-auto h-72 w-72 rounded-full object-cover shadow-xl ring-4 ring-white"
-              />
-            </div>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-3 text-sm">
-                <CheckCircle2 className="h-5 w-5 text-[#f26522]" /> Somos 100% digitales
-              </li>
-              <li className="flex items-center gap-3 text-sm">
-                <CheckCircle2 className="h-5 w-5 text-[#f26522]" /> Trabajamos con reportados y pensionados
-              </li>
-            </ul>
-          </div>
+        <section id="simulador" className="px-6">
+          <CreditSimulator
+            minAmount={defaultSimulatorConfig.montoMinimo}
+            maxAmount={defaultSimulatorConfig.montoMaximo}
+            monthlyRate={defaultSimulatorConfig.tasaInteresMensual}
+            terms={defaultSimulatorConfig.plazosDisponibles}
+            initialAmount={defaultSimulatorConfig.montoMinimo}
+            initialTerm={defaultSimulatorConfig.plazosDisponibles[0]}
+            showModeToggle
+          />
         </section>
 
         <section id="quienes" className="bg-white py-14 shadow-inner">

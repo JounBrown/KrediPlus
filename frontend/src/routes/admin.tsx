@@ -3,6 +3,7 @@ import { Link, Route } from '@tanstack/react-router'
 import { rootRoute } from './root'
 import { SiteHeader } from '@/components/layout/site-header'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
@@ -28,23 +29,51 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { ListChecks, MoreHorizontal, Search, Settings, Users, UploadCloud } from 'lucide-react'
+import { CreditSimulator } from '@/components/credit-simulator'
 import {
-  ListChecks,
-  MoreHorizontal,
-  Search,
-  Settings,
-  Users,
-  UploadCloud,
-} from 'lucide-react'
+  defaultSimulatorConfig,
+  initialSimulatorConfigs,
+  type SimulatorConfig,
+} from '@/data/simulator-config'
+
+type TabId = 'requests' | 'upload' | 'clients' | 'simulator'
+
+type RequestRecord = {
+  name: string
+  id: string
+  convenio: string
+  phone: string
+  birthDate: string
+}
+
+type ClientRecord = {
+  id: number
+  createdAt: string
+  nombreCompleto: string
+  cedula: string
+  email: string
+  telefono: string
+  fechaNacimiento: string
+  direccion: string
+  infoAdicional: string
+}
+
+type SimulatorConfigForm = {
+  tasaInteresMensual: string
+  montoMinimo: string
+  montoMaximo: string
+  plazosDisponibles: string
+}
 
 const adminTabs = [
   { id: 'requests', label: 'Solicitudes Registradas', icon: ListChecks },
   { id: 'upload', label: 'Carga de Documentos', icon: UploadCloud },
   { id: 'clients', label: 'Gestión Clientes', icon: Users },
   { id: 'simulator', label: 'Configuración Simulador', icon: Settings },
-] as const
+] as const satisfies ReadonlyArray<{ id: TabId; label: string; icon: typeof ListChecks }>
 
-const requestsData = [
+const requestsData: RequestRecord[] = [
   {
     name: 'Carlos Prada Claro',
     id: '1022423',
@@ -81,20 +110,6 @@ const requestsData = [
     birthDate: '08/07/1952',
   },
 ]
-
-type TabId = (typeof adminTabs)[number]['id']
-
-type ClientRecord = {
-  id: number
-  createdAt: string
-  nombreCompleto: string
-  cedula: string
-  email: string
-  telefono: string
-  fechaNacimiento: string
-  direccion: string
-  infoAdicional: string
-}
 
 const initialClients: ClientRecord[] = [
   {
@@ -137,6 +152,8 @@ function AdminPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [clientSearch, setClientSearch] = useState('')
   const [clients, setClients] = useState<ClientRecord[]>(initialClients)
+  const [simConfigs, setSimConfigs] = useState<SimulatorConfig[]>(initialSimulatorConfigs)
+  const [selectedConfigId, setSelectedConfigId] = useState<number>(defaultSimulatorConfig.id)
   const [dialogType, setDialogType] = useState<'create' | 'edit' | 'delete' | 'view' | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [activeClient, setActiveClient] = useState<ClientRecord | null>(null)
@@ -149,23 +166,44 @@ function AdminPage() {
     direccion: '',
     infoAdicional: '',
   })
+  const [configDialogOpen, setConfigDialogOpen] = useState(false)
+  const [configDialogMode, setConfigDialogMode] = useState<'create' | 'edit'>('create')
+  const [activeSimConfig, setActiveSimConfig] = useState<SimulatorConfig | null>(null)
+  const [configForm, setConfigForm] = useState<SimulatorConfigForm>({
+    tasaInteresMensual: '',
+    montoMinimo: '',
+    montoMaximo: '',
+    plazosDisponibles: '',
+  })
 
   const filteredRequests = useMemo(() => {
-    return requestsData.filter((request) => {
-      const haystack = `${request.name} ${request.id}`.toLowerCase()
-      return haystack.includes(searchTerm.toLowerCase())
-    })
+    const query = searchTerm.toLowerCase()
+    return requestsData.filter((request) =>
+      `${request.name} ${request.id}`.toLowerCase().includes(query),
+    )
   }, [searchTerm])
 
   const filteredClients = useMemo(() => {
+    const query = clientSearch.toLowerCase()
     return clients.filter((client) =>
-      `${client.nombreCompleto} ${client.cedula}`
-        .toLowerCase()
-        .includes(clientSearch.toLowerCase()),
+      `${client.nombreCompleto} ${client.cedula}`.toLowerCase().includes(query),
     )
   }, [clients, clientSearch])
 
-  const openDialog = (type: typeof dialogType, client?: ClientRecord | null) => {
+  const currencyFormatter = useMemo(() => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0,
+    })
+  }, [])
+
+  const selectedConfig = useMemo(() => {
+    if (!simConfigs.length) return null
+    return simConfigs.find((config) => config.id === selectedConfigId) ?? simConfigs[0]
+  }, [selectedConfigId, simConfigs])
+
+  const openDialog = (type: 'create' | 'edit' | 'delete' | 'view', client?: ClientRecord) => {
     setDialogType(type)
     setActiveClient(client ?? null)
     if (type === 'edit' && client) {
@@ -181,6 +219,9 @@ function AdminPage() {
         direccion: '',
         infoAdicional: '',
       })
+    } else if (client) {
+      const { createdAt, id, ...rest } = client
+      setFormState(rest)
     }
     setDialogOpen(true)
   }
@@ -223,16 +264,92 @@ function AdminPage() {
     closeDialog()
   }
 
-  return (
-    <div className="min-h-screen bg-[#f7f7f7] text-slate-900">
-      <SiteHeader active="admin" />
+  const openSimConfigDialog = (mode: 'create' | 'edit', config?: SimulatorConfig) => {
+    setConfigDialogMode(mode)
+    if (mode === 'edit' && config) {
+      setActiveSimConfig(config)
+      setConfigForm({
+        tasaInteresMensual: config.tasaInteresMensual.toString(),
+        montoMinimo: config.montoMinimo.toString(),
+        montoMaximo: config.montoMaximo.toString(),
+        plazosDisponibles: config.plazosDisponibles.join(', '),
+      })
+    } else {
+      setActiveSimConfig(null)
+      setConfigForm({
+        tasaInteresMensual: '',
+        montoMinimo: '',
+        montoMaximo: '',
+        plazosDisponibles: '',
+      })
+    }
+    setConfigDialogOpen(true)
+  }
 
-      <main className="mx-auto max-w-6xl px-6 py-12">
-        <div className="rounded-3xl bg-white p-8 shadow-xl ring-1 ring-slate-100">
-          <div className="flex flex-col gap-2">
-            <p className="text-3xl font-extrabold text-[#0d2f62]">Panel de Administrador</p>
-            <p className="text-sm text-slate-500">
-              Gestiona las solicitudes y documentos de los clientes.
+  const closeSimConfigDialog = () => {
+    setConfigDialogOpen(false)
+    setActiveSimConfig(null)
+  }
+
+  const handleConfigFormChange = (field: keyof SimulatorConfigForm, value: string) => {
+    setConfigForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleSaveSimConfig = () => {
+    const parsedRate = parseFloat(configForm.tasaInteresMensual) || 0
+    const parsedMin = parseInt(configForm.montoMinimo, 10) || 0
+    const parsedMax = parseInt(configForm.montoMaximo, 10) || 0
+    const parsedPlazos = configForm.plazosDisponibles
+      .split(',')
+      .map((value) => Number(value.trim()))
+      .filter((value) => !Number.isNaN(value) && value > 0)
+
+    const safePlazos = parsedPlazos.length ? parsedPlazos : [12]
+
+    if (configDialogMode === 'create') {
+      const newConfig: SimulatorConfig = {
+        id: Date.now(),
+        createdAt: new Date().toISOString(),
+        tasaInteresMensual: parsedRate,
+        montoMinimo: parsedMin,
+        montoMaximo: parsedMax,
+        plazosDisponibles: safePlazos,
+      }
+      setSimConfigs((prev) => [newConfig, ...prev])
+      setSelectedConfigId(newConfig.id)
+    } else if (configDialogMode === 'edit' && activeSimConfig) {
+      const updatedConfig: SimulatorConfig = {
+        ...activeSimConfig,
+        tasaInteresMensual: parsedRate,
+        montoMinimo: parsedMin,
+        montoMaximo: parsedMax,
+        plazosDisponibles: safePlazos,
+      }
+      setSimConfigs((prev) =>
+        prev.map((config) => (config.id === updatedConfig.id ? updatedConfig : config)),
+      )
+      setSelectedConfigId(updatedConfig.id)
+    }
+
+    closeSimConfigDialog()
+  }
+
+  const handleSelectConfig = (configId: number) => {
+    setSelectedConfigId(configId)
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f4f7fb]">
+      <SiteHeader />
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 pb-16 pt-10">
+        <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
+          <div className="space-y-2">
+            <p className="text-sm font-semibold uppercase tracking-wide text-[#f26522]">
+              Panel administrativo
+            </p>
+            <h1 className="text-3xl font-bold text-[#0d2f62]">Gestiona KrediPlus</h1>
+            <p className="text-slate-500">
+              Gestiona las solicitudes, documentos y configuraciones del simulador en un solo lugar.
             </p>
           </div>
 
@@ -262,7 +379,7 @@ function AdminPage() {
 
           {activeTab === 'requests' ? (
             <section>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <p className="text-lg font-semibold text-[#0d2f62]">Solicitudes Registradas</p>
                   <p className="text-sm text-slate-500">Revisa el estado de las solicitudes recibidas.</p>
@@ -315,7 +432,10 @@ function AdminPage() {
                         <TableCell>{request.phone}</TableCell>
                         <TableCell>{request.birthDate}</TableCell>
                         <TableCell className="text-right">
-                          <button className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600" aria-label="Más acciones">
+                          <button
+                            className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                            aria-label="Más acciones"
+                          >
                             <MoreHorizontal className="h-5 w-5" />
                           </button>
                         </TableCell>
@@ -436,8 +556,113 @@ function AdminPage() {
               </div>
             </section>
           ) : (
-            <section className="space-y-4 text-center text-sm text-slate-500">
-              <p>Aquí construiremos la vista de Configuración del Simulador.</p>
+            <section className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="text-lg font-semibold text-[#0d2f62]">Configuración del Simulador</p>
+                  <p className="text-sm text-slate-500">
+                    Ajusta los parámetros financieros que usa el simulador de crédito.
+                  </p>
+                </div>
+                <Button
+                  className="bg-[#f26522] text-white hover:bg-[#d85314]"
+                  onClick={() => openSimConfigDialog('create')}
+                >
+                  Agregar nueva configuración
+                </Button>
+              </div>
+
+              <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+                <Table>
+                  <TableHeader className="bg-slate-50">
+                    <TableRow>
+                      <TableHead className="text-xs font-bold uppercase text-slate-500">ID</TableHead>
+                      <TableHead className="text-xs font-bold uppercase text-slate-500">Creado el</TableHead>
+                      <TableHead className="text-xs font-bold uppercase text-slate-500">Tasa interés mensual</TableHead>
+                      <TableHead className="text-xs font-bold uppercase text-slate-500">Monto mínimo</TableHead>
+                      <TableHead className="text-xs font-bold uppercase text-slate-500">Monto máximo</TableHead>
+                      <TableHead className="text-xs font-bold uppercase text-slate-500">Plazos disponibles</TableHead>
+                      <TableHead>
+                        <span className="sr-only">Acciones</span>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {simConfigs.map((config) => (
+                      <TableRow
+                        key={config.id}
+                        className={cn(
+                          'text-sm',
+                          selectedConfig?.id === config.id && 'bg-orange-50/60',
+                        )}
+                      >
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-[#0d2f62]">#{config.id}</span>
+                            {selectedConfig?.id === config.id && (
+                              <Badge variant="outline" className="border-[#f26522] text-[#f26522]">
+                                Activo
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(config.createdAt).toLocaleDateString('es-CO', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </TableCell>
+                        <TableCell>{config.tasaInteresMensual.toFixed(2)}%</TableCell>
+                        <TableCell>{currencyFormatter.format(config.montoMinimo)}</TableCell>
+                        <TableCell>{currencyFormatter.format(config.montoMaximo)}</TableCell>
+                        <TableCell>
+                          {config.plazosDisponibles.map((plazo) => `${plazo}m`).join(', ')}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                                aria-label="Acciones de configuración"
+                              >
+                                <MoreHorizontal className="h-5 w-5" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openSimConfigDialog('edit', config)}>
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleSelectConfig(config.id)}>
+                                Seleccionar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {selectedConfig && (
+                <div className="space-y-3">
+                  <CreditSimulator
+                    key={selectedConfig.id}
+                    minAmount={selectedConfig.montoMinimo}
+                    maxAmount={selectedConfig.montoMaximo}
+                    monthlyRate={selectedConfig.tasaInteresMensual}
+                    terms={selectedConfig.plazosDisponibles}
+                    initialAmount={selectedConfig.montoMinimo}
+                    initialTerm={selectedConfig.plazosDisponibles[0]}
+                    showModeToggle
+                  />
+                  <p className="text-center text-sm text-slate-500">
+                    Configuración activa #{selectedConfig.id} creada el{' '}
+                    {new Date(selectedConfig.createdAt).toLocaleDateString('es-CO')}
+                  </p>
+                </div>
+              )}
             </section>
           )}
         </div>
@@ -459,12 +684,24 @@ function AdminPage() {
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-3 text-sm text-slate-600">
-                <p><span className="font-semibold">Nombre:</span> {activeClient.nombreCompleto}</p>
-                <p><span className="font-semibold">Cédula:</span> {activeClient.cedula}</p>
-                <p><span className="font-semibold">Email:</span> {activeClient.email}</p>
-                <p><span className="font-semibold">Teléfono:</span> {activeClient.telefono}</p>
-                <p><span className="font-semibold">Fecha de nacimiento:</span> {activeClient.fechaNacimiento}</p>
-                <p><span className="font-semibold">Dirección:</span> {activeClient.direccion}</p>
+                <p>
+                  <span className="font-semibold">Nombre:</span> {activeClient.nombreCompleto}
+                </p>
+                <p>
+                  <span className="font-semibold">Cédula:</span> {activeClient.cedula}
+                </p>
+                <p>
+                  <span className="font-semibold">Email:</span> {activeClient.email}
+                </p>
+                <p>
+                  <span className="font-semibold">Teléfono:</span> {activeClient.telefono}
+                </p>
+                <p>
+                  <span className="font-semibold">Fecha de nacimiento:</span> {activeClient.fechaNacimiento}
+                </p>
+                <p>
+                  <span className="font-semibold">Dirección:</span> {activeClient.direccion}
+                </p>
                 <p>
                   <span className="font-semibold">Info adicional:</span> {activeClient.infoAdicional}
                 </p>
@@ -508,38 +745,38 @@ function AdminPage() {
               <div className="space-y-4">
                 <Input
                   value={formState.nombreCompleto}
-                  onChange={(e) => handleFieldChange('nombreCompleto', e.target.value)}
+                  onChange={(event) => handleFieldChange('nombreCompleto', event.target.value)}
                   placeholder="Nombre completo"
                 />
                 <Input
                   value={formState.cedula}
-                  onChange={(e) => handleFieldChange('cedula', e.target.value)}
+                  onChange={(event) => handleFieldChange('cedula', event.target.value)}
                   placeholder="Cédula"
                 />
                 <Input
                   type="email"
                   value={formState.email}
-                  onChange={(e) => handleFieldChange('email', e.target.value)}
+                  onChange={(event) => handleFieldChange('email', event.target.value)}
                   placeholder="Correo electrónico"
                 />
                 <Input
                   value={formState.telefono}
-                  onChange={(e) => handleFieldChange('telefono', e.target.value)}
+                  onChange={(event) => handleFieldChange('telefono', event.target.value)}
                   placeholder="Teléfono"
                 />
                 <Input
                   type="date"
                   value={formState.fechaNacimiento}
-                  onChange={(e) => handleFieldChange('fechaNacimiento', e.target.value)}
+                  onChange={(event) => handleFieldChange('fechaNacimiento', event.target.value)}
                 />
                 <Input
                   value={formState.direccion}
-                  onChange={(e) => handleFieldChange('direccion', e.target.value)}
+                  onChange={(event) => handleFieldChange('direccion', event.target.value)}
                   placeholder="Dirección"
                 />
                 <Textarea
                   value={formState.infoAdicional}
-                  onChange={(e) => handleFieldChange('infoAdicional', e.target.value)}
+                  onChange={(event) => handleFieldChange('infoAdicional', event.target.value)}
                   placeholder="Información adicional"
                   rows={4}
                 />
@@ -554,6 +791,80 @@ function AdminPage() {
               </DialogFooter>
             </>
           ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={configDialogOpen}
+        onOpenChange={(open: boolean) => {
+          if (!open) closeSimConfigDialog()
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {configDialogMode === 'create'
+                ? 'Agregar configuración del simulador'
+                : 'Editar configuración del simulador'}
+            </DialogTitle>
+            <DialogDescription>
+              Define los parámetros que controlan el simulador mostrado a los usuarios.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-600">Tasa de interés mensual (%)</label>
+              <Input
+                type="number"
+                value={configForm.tasaInteresMensual}
+                onChange={(event) => handleConfigFormChange('tasaInteresMensual', event.target.value)}
+                placeholder="Ej: 1.55"
+                min={0}
+                step="0.01"
+              />
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-600">Monto mínimo</label>
+                <Input
+                  type="number"
+                  value={configForm.montoMinimo}
+                  onChange={(event) => handleConfigFormChange('montoMinimo', event.target.value)}
+                  placeholder="Ej: 3000000"
+                  min={0}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-600">Monto máximo</label>
+                <Input
+                  type="number"
+                  value={configForm.montoMaximo}
+                  onChange={(event) => handleConfigFormChange('montoMaximo', event.target.value)}
+                  placeholder="Ej: 40000000"
+                  min={0}
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-600">Plazos disponibles (meses)</label>
+              <Input
+                value={configForm.plazosDisponibles}
+                onChange={(event) => handleConfigFormChange('plazosDisponibles', event.target.value)}
+                placeholder="Ej: 12, 24, 36"
+              />
+              <p className="text-xs text-slate-500">Separa cada plazo con comas.</p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeSimConfigDialog}>
+              Cancelar
+            </Button>
+            <Button className="bg-[#f26522] text-white" onClick={handleSaveSimConfig}>
+              {configDialogMode === 'create' ? 'Guardar configuración' : 'Guardar cambios'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
