@@ -1,27 +1,13 @@
 import { useState } from 'react'
 import { Route } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
 import { rootRoute } from './root'
-import {
-  CalendarIcon,
-  MessageCircle,
-  Phone,
-  Send,
-  ShieldCheck,
-  X,
-} from 'lucide-react'
+import { MessageCircle, Send, X } from 'lucide-react'
 import { SiteHeader } from '@/components/layout/site-header'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { CreditSimulator } from '@/components/credit-simulator'
 import { defaultSimulatorConfig } from '@/data/simulator-config'
+import { Footer } from '@/components/layout/Footer'
+import { SubmitFormCard } from '@/features/submit-form/components/submit-form-card'
 
 function IndexPage() {
   const [isChatOpen, setIsChatOpen] = useState(false)
@@ -52,65 +38,7 @@ function IndexPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-white shadow-xl ring-1 ring-orange-50">
-              <div className="rounded-t-2xl bg-gradient-to-br from-orange-50 via-white to-white px-8 pb-4 pt-8 text-center">
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 text-[#f26522]">
-                  <ShieldCheck className="h-7 w-7" />
-                </div>
-                <h2 className="text-lg font-bold text-[#0d2f62]">¡Toma el control de tu vida financiera!</h2>
-                <p className="text-sm text-slate-600">Obtén tu crédito rápido y fácil</p>
-              </div>
-
-              <div className="space-y-4 px-8 pb-8">
-                <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-700">Nombre Completo</label>
-                  <Input placeholder="Tu nombre completo" />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-700">Cédula</label>
-                  <Input placeholder="Número de documento" />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-700">Convenio</label>
-                  <Select defaultValue="">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona una opción" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="fondo">Fondo de pensiones</SelectItem>
-                      <SelectItem value="pagaduria">Pagaduría aliada</SelectItem>
-                      <SelectItem value="otros">Otro convenio</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-700">Teléfono</label>
-                  <Input placeholder="Tu número de teléfono" />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-700">Fecha de Nacimiento</label>
-                  <div className="flex items-center gap-2">
-                    <Input type="date" className="flex-1" />
-                    <CalendarIcon className="h-5 w-5 text-slate-400" />
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 rounded-md bg-slate-50 px-3 py-2">
-                  <Checkbox id="policy" className="mt-1" />
-                  <label htmlFor="policy" className="text-sm text-slate-600">
-                    He leído y acepto la política de privacidad de datos.
-                  </label>
-                </div>
-
-                <Button className="w-full bg-[#f26522] text-white hover:bg-[#d85314]">
-                  Solicitar mi crédito
-                </Button>
-              </div>
-            </div>
+            <SubmitFormCard />
           </div>
         </section>
 
@@ -257,36 +185,7 @@ function IndexPage() {
         </>
       )}
 
-      <footer id="contacto" className="mt-4 bg-[#0d2f62] py-12 text-white">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 md:grid-cols-4 md:items-start">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3 text-lg font-bold">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">K+</div>
-              <span>KrediPlus</span>
-            </div>
-            <p className="text-sm text-slate-200">Soluciones financieras a tu alcance.</p>
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-sm font-semibold uppercase tracking-wide text-orange-200">Puedes comunicarte al</p>
-            <p className="flex items-center gap-2 text-sm"><Phone className="h-4 w-4" /> Línea telefónica: 304-589-7423</p>
-            <p className="flex items-center gap-2 text-sm"><Phone className="h-4 w-4" /> WhatsApp: 304-589-7423</p>
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-sm font-semibold uppercase tracking-wide text-orange-200">Nuestras redes</p>
-            <p className="text-sm">Instagram: @KrediPlus</p>
-            <p className="text-sm">Facebook: KrediPlus</p>
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-sm font-semibold uppercase tracking-wide text-orange-200">Página web</p>
-            <p className="text-sm">Sitio oficial</p>
-            <p className="text-sm">www.krediplus.com.co</p>
-          </div>
-        </div>
-        <p className="mt-10 text-center text-xs text-slate-300">© 2025 Todos los derechos reservados. KrediPlus.</p>
-      </footer>
+      <Footer />
     </div>
   )
 }
