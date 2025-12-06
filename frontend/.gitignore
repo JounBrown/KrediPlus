@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+Prototipo.pdf
+
+.github
+.env
+.env.*.local
+.env.local
+
+
+.vscode
