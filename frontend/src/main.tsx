@@ -1,9 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-// import App from './App.tsx' // No necesitamos App.tsx directamente ahora
-import { RouterProvider } from '@tanstack/router' // Importar RouterProvider
-import { router } from './router.tsx' // Importar la instancia del router
+import { RouterProvider } from '@tanstack/react-router'
+import { router } from './router.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

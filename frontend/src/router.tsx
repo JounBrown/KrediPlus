@@ -1,25 +1,13 @@
 
-import { createRouter, RootRoute, Outlet } from '@tanstack/router'
-
-const rootRoute = new RootRoute({
-  component: () => (
-    <>
-      <Outlet /> {/* El Outlet es donde se renderizarán las rutas hijas */}
-    </>
-  ),
-})
-
-// Importa tus archivos de ruta aquí
+import { createRouter } from '@tanstack/react-router'
 import { indexRoute } from './routes/index'
+import { rootRoute } from './routes/root'
 
-const routeTree = rootRoute.addChildren([
-  // Añade tus rutas hijas aquí
-  indexRoute,
-])
+const routeTree = rootRoute.addChildren([indexRoute])
 
 export const router = createRouter({ routeTree })
 
-declare module '@tanstack/router' {
+declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router
   }
