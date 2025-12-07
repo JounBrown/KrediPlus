@@ -12,6 +12,7 @@ class CreditSimulator:
         monto_minimo: float = 100000,
         monto_maximo: float = 100000000,
         plazos_disponibles: List[int] = None,
+        is_active: bool = False,
         created_at: Optional[datetime] = None
     ):
         self.id = id
@@ -19,11 +20,12 @@ class CreditSimulator:
         self.monto_minimo = monto_minimo
         self.monto_maximo = monto_maximo
         self.plazos_disponibles = plazos_disponibles or [6, 12, 18, 24, 36, 48, 60, 72]
+        self.is_active = is_active
         self.created_at = created_at or datetime.now()
     
     def validate(self) -> bool:
         """Validate simulator configuration"""
-        if self.tasa_interes_mensual <= 0 or self.tasa_interes_mensual > 0.1:
+        if self.tasa_interes_mensual <= 0 or self.tasa_interes_mensual > 0.2:
             return False
         
         if self.monto_minimo <= 0 or self.monto_maximo <= 0:

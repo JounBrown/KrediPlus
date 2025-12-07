@@ -75,7 +75,8 @@ class CreditSimulatorService:
                 tasa_interes_mensual=config.tasa_interes_mensual,
                 monto_minimo=config.monto_minimo,
                 monto_maximo=config.monto_maximo,
-                plazos_disponibles=config.plazos_disponibles
+                plazos_disponibles=config.plazos_disponibles,
+                is_active=config.is_active
             )
             for config in configs
         ]
@@ -95,7 +96,8 @@ class CreditSimulatorService:
             tasa_interes_mensual=request.tasa_interes_mensual,
             monto_minimo=request.monto_minimo,
             monto_maximo=request.monto_maximo,
-            plazos_disponibles=request.plazos_disponibles
+            plazos_disponibles=request.plazos_disponibles,
+            is_active=request.is_active
         )
         
         # Validar configuración
@@ -110,7 +112,8 @@ class CreditSimulatorService:
             tasa_interes_mensual=created_config.tasa_interes_mensual,
             monto_minimo=created_config.monto_minimo,
             monto_maximo=created_config.monto_maximo,
-            plazos_disponibles=created_config.plazos_disponibles
+            plazos_disponibles=created_config.plazos_disponibles,
+            is_active=created_config.is_active
         )
     
     async def modify_simulator_config(self, config_id: int, request: UpdateSimulatorConfigRequest) -> SimulatorConfigResponse:
@@ -136,6 +139,7 @@ class CreditSimulatorService:
             monto_minimo=request.monto_minimo if request.monto_minimo is not None else existing_config.monto_minimo,
             monto_maximo=request.monto_maximo if request.monto_maximo is not None else existing_config.monto_maximo,
             plazos_disponibles=request.plazos_disponibles if request.plazos_disponibles is not None else existing_config.plazos_disponibles,
+            is_active=request.is_active if request.is_active is not None else existing_config.is_active,
             created_at=existing_config.created_at
         )
         
@@ -155,7 +159,8 @@ class CreditSimulatorService:
             tasa_interes_mensual=modified_config.tasa_interes_mensual,
             monto_minimo=modified_config.monto_minimo,
             monto_maximo=modified_config.monto_maximo,
-            plazos_disponibles=modified_config.plazos_disponibles
+            plazos_disponibles=modified_config.plazos_disponibles,
+            is_active=modified_config.is_active
         )
     
     def _calcular_cuota_mensual(self, monto: float, tasa_mensual: float, plazo_meses: int) -> float:
@@ -182,11 +187,11 @@ class CreditSimulatorService:
         return round(cuota, 2)
     
     async def _get_active_config(self) -> CreditSimulator:
-        """Get configuration with ID 1 (hardcoded active configuration)"""
-        config = await self._simulator_repository.get_by_id(1)
+        """Get the currently active configuration"""
+        config = await self._simulator_repository.get_active_config()
         
         if config is None:
-            raise ValueError("No existe configuración con ID 1. Debe crear una configuración primero.")
+            raise ValueError("No existe una configuración activa. Debe activar una configuración primero.")
         
         return config
     
@@ -219,3 +224,30 @@ class CreditSimulatorService:
             "monto_valido": config.monto_minimo <= monto <= config.monto_maximo,
             "plazo_valido": plazo_meses in config.plazos_disponibles
         }
+    
+    async def activate_config(self, config_id: int) -> SimulatorConfigResponse:
+        """
+        Activate a specific simulator configuration
+        
+        Args:
+            config_id: ID of the configuration to activate
+            
+        Returns:
+            SimulatorConfigResponse with activated configuration
+        """
+        # Verificar que la configuración existe
+        config = await self._simulator_repository.get_by_id(config_id)
+        if not config:
+            raise ValueError(f"Configuración con ID {config_id} no encontrada")
+        
+        # Activar la configuración (esto desactiva automáticamente las otras)
+        activated_config = await self._simulator_repository.set_active_config(config_id)
+        
+        return SimulatorConfigResponse(
+            id=activated_config.id,
+            tasa_interes_mensual=activated_config.tasa_interes_mensual,
+            monto_minimo=activated_config.monto_minimo,
+            monto_maximo=activated_config.monto_maximo,
+            plazos_disponibles=activated_config.plazos_disponibles,
+            is_active=activated_config.is_active
+        )

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -73,3 +73,4 @@ class CreditSimulatorModel(Base):
     monto_minimo = Column(Float, nullable=False)
     monto_maximo = Column(Float, nullable=False)
     plazos_disponibles = Column(JSON, nullable=False)
+    is_active = Column(Boolean, nullable=False, default=False)

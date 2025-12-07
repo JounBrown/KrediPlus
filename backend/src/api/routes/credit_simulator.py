@@ -106,3 +106,26 @@ async def modify_simulator_config(
         raise HTTPException(status_code=500, detail=f"Error modifying simulator config: {str(e)}")
 
 
+@router.post("/config/{config_id}/activate", response_model=SimulatorConfigResponse)
+async def activate_simulator_config(
+    config_id: int,
+    service: CreditSimulatorService = Depends(get_simulator_service)
+):
+    """
+    Activate a specific simulator configuration
+    
+    - **config_id**: ID of the configuration to activate
+    
+    This will:
+    - Set the specified configuration as active (is_active = true)
+    - Automatically deactivate all other configurations (is_active = false)
+    - The simulator will use this configuration for all credit simulations
+    """
+    try:
+        return await service.activate_config(config_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error activating simulator config: {str(e)}")
+
+

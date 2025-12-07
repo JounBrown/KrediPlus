@@ -22,6 +22,7 @@ class SupabaseCreditSimulatorRepository(CreditSimulatorRepositoryPort):
             monto_minimo=model.monto_minimo,
             monto_maximo=model.monto_maximo,
             plazos_disponibles=model.plazos_disponibles,
+            is_active=model.is_active,
             created_at=model.created_at
         )
     
@@ -33,6 +34,7 @@ class SupabaseCreditSimulatorRepository(CreditSimulatorRepositoryPort):
             monto_minimo=entity.monto_minimo,
             monto_maximo=entity.monto_maximo,
             plazos_disponibles=entity.plazos_disponibles,
+            is_active=entity.is_active,
             created_at=entity.created_at or datetime.now()
         )
     
@@ -52,10 +54,10 @@ class SupabaseCreditSimulatorRepository(CreditSimulatorRepositoryPort):
             raise Exception(f"Error creating simulator config: {str(e)}")
     
     async def get_active_config(self) -> Optional[CreditSimulator]:
-        """Get the most recent (active) simulator configuration"""
+        """Get the currently active simulator configuration"""
         try:
-            stmt = select(CreditSimulatorModel).order_by(
-                CreditSimulatorModel.created_at.desc()
+            stmt = select(CreditSimulatorModel).where(
+                CreditSimulatorModel.is_active == True
             ).limit(1)
             
             result = await self.db.execute(stmt)
@@ -83,6 +85,7 @@ class SupabaseCreditSimulatorRepository(CreditSimulatorRepositoryPort):
             model.monto_minimo = simulator.monto_minimo
             model.monto_maximo = simulator.monto_maximo
             model.plazos_disponibles = simulator.plazos_disponibles
+            model.is_active = simulator.is_active
             
             await self.db.flush()
             await self.db.refresh(model)
@@ -117,3 +120,32 @@ class SupabaseCreditSimulatorRepository(CreditSimulatorRepositoryPort):
             
         except Exception as e:
             raise Exception(f"Error getting all simulator configs: {str(e)}")
+    
+    async def set_active_config(self, config_id: int) -> CreditSimulator:
+        """Set a configuration as active (deactivates others)"""
+        try:
+            # First, deactivate all configurations
+            stmt_deactivate = select(CreditSimulatorModel)
+            result = await self.db.execute(stmt_deactivate)
+            all_models = result.scalars().all()
+            
+            for model in all_models:
+                model.is_active = False
+            
+            # Then activate the specified configuration
+            stmt_activate = select(CreditSimulatorModel).where(CreditSimulatorModel.id == config_id)
+            result = await self.db.execute(stmt_activate)
+            target_model = result.scalar_one_or_none()
+            
+            if not target_model:
+                raise Exception(f"Configuration with ID {config_id} not found")
+            
+            target_model.is_active = True
+            
+            await self.db.flush()
+            await self.db.refresh(target_model)
+            
+            return self._model_to_entity(target_model)
+            
+        except Exception as e:
+            raise Exception(f"Error setting active config: {str(e)}")

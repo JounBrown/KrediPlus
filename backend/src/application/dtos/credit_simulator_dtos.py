@@ -38,15 +38,16 @@ class SimulateCreditResponse(BaseModel):
 
 class CreateSimulatorConfigRequest(BaseModel):
     """DTO for creating/updating simulator configuration"""
-    tasa_interes_mensual: float = Field(..., gt=0, le=0.1, description="Monthly interest rate (0.001 - 0.1)")
+    tasa_interes_mensual: float = Field(..., gt=0, le=0.2, description="Monthly interest rate (0.001 - 0.2)")
     monto_minimo: float = Field(..., gt=0, description="Minimum loan amount")
     monto_maximo: float = Field(..., gt=0, description="Maximum loan amount")
     plazos_disponibles: List[int] = Field(..., description="Available terms in months")
+    is_active: bool = Field(False, description="Whether this configuration should be active")
     
     @validator('tasa_interes_mensual')
     def validate_tasa(cls, v):
-        if v <= 0 or v > 0.1:  # Máximo 10% mensual
-            raise ValueError('Tasa debe estar entre 0.1% y 10% mensual')
+        if v <= 0 or v > 0.2:  # Máximo 20% mensual
+            raise ValueError('Tasa debe estar entre 0.1% y 20% mensual')
         return v
     
     @validator('monto_maximo')
@@ -66,15 +67,16 @@ class CreateSimulatorConfigRequest(BaseModel):
 
 class UpdateSimulatorConfigRequest(BaseModel):
     """DTO for updating simulator configuration (partial updates allowed)"""
-    tasa_interes_mensual: float = Field(None, gt=0, le=0.1, description="Monthly interest rate (0.001 - 0.1)")
+    tasa_interes_mensual: float = Field(None, gt=0, le=0.2, description="Monthly interest rate (0.001 - 0.2)")
     monto_minimo: float = Field(None, gt=0, description="Minimum loan amount")
     monto_maximo: float = Field(None, gt=0, description="Maximum loan amount")
     plazos_disponibles: List[int] = Field(None, description="Available terms in months")
+    is_active: bool = Field(None, description="Whether this configuration should be active")
     
     @validator('tasa_interes_mensual')
     def validate_tasa(cls, v):
-        if v is not None and (v <= 0 or v > 0.1):  # Máximo 10% mensual
-            raise ValueError('Tasa debe estar entre 0.1% y 10% mensual')
+        if v is not None and (v <= 0 or v > 0.2):  # Máximo 20% mensual
+            raise ValueError('Tasa debe estar entre 0.1% y 20% mensual')
         return v
     
     @validator('plazos_disponibles')
@@ -95,6 +97,7 @@ class SimulatorConfigResponse(BaseModel):
     monto_minimo: float
     monto_maximo: float
     plazos_disponibles: List[int]
+    is_active: bool
     
     class Config:
         from_attributes = True
