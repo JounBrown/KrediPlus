@@ -33,6 +33,8 @@ function AdminPage() {
     handleFormChange,
     handleSaveConfig,
     handleSelectConfig,
+    savingConfig,
+    saveError,
   } = useSimulatorConfigs(remoteSimulatorConfigs, activeBackendConfigId)
 
   const currencyFormatter = useMemo(() => {
@@ -91,6 +93,8 @@ function AdminPage() {
         }}
         onChange={handleFormChange}
         onSubmit={handleSaveConfig}
+        submitting={savingConfig}
+        errorMessage={saveError?.message}
       />
     </>
   )

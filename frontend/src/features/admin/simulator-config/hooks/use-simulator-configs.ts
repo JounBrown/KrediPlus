@@ -4,6 +4,7 @@ import {
   initialSimulatorConfigs,
   type SimulatorConfig,
 } from '@/data/simulator-config'
+import { useCreateSimulatorConfig } from '@/features/simulator-config/hooks/use-create-simulator-config'
 
 export type SimulatorConfigForm = {
   tasaInteresMensual: string
@@ -85,6 +86,14 @@ export function useSimulatorConfigs(
     setActiveSimConfig(null)
   }
 
+  const createSimulatorConfigMutation = useCreateSimulatorConfig({
+    onSuccess: (config) => {
+      setSimConfigs((prev) => [config, ...prev])
+      setSelectedConfigId(config.id)
+      closeDialog()
+    },
+  })
+
   const handleFormChange = (field: keyof SimulatorConfigForm, value: string) => {
     setConfigForm((prev) => ({ ...prev, [field]: value }))
   }
@@ -97,17 +106,16 @@ export function useSimulatorConfigs(
     const safePlazos = parsedPlazos.length ? parsedPlazos : [12]
 
     if (dialogMode === 'create') {
-      const newConfig: SimulatorConfig = {
-        id: Date.now(),
-        createdAt: new Date().toISOString(),
-        tasaInteresMensual: parsedRate,
-        montoMinimo: parsedMin,
-        montoMaximo: parsedMax,
-        plazosDisponibles: safePlazos,
-      }
-      setSimConfigs((prev) => [newConfig, ...prev])
-      setSelectedConfigId(newConfig.id)
-    } else if (dialogMode === 'edit' && activeSimConfig) {
+      createSimulatorConfigMutation.mutate({
+        tasa_interes_mensual: parsedRate,
+        monto_minimo: parsedMin,
+        monto_maximo: parsedMax,
+        plazos_disponibles: safePlazos,
+      })
+      return
+    }
+
+    if (dialogMode === 'edit' && activeSimConfig) {
       const updatedConfig: SimulatorConfig = {
         ...activeSimConfig,
         tasaInteresMensual: parsedRate,
@@ -119,6 +127,8 @@ export function useSimulatorConfigs(
         prev.map((config) => (config.id === updatedConfig.id ? updatedConfig : config)),
       )
       setSelectedConfigId(updatedConfig.id)
+      closeDialog()
+      return
     }
 
     closeDialog()
@@ -140,5 +150,7 @@ export function useSimulatorConfigs(
     handleFormChange,
     handleSaveConfig,
     handleSelectConfig,
+    savingConfig: createSimulatorConfigMutation.isPending,
+    saveError: createSimulatorConfigMutation.error,
   }
 }

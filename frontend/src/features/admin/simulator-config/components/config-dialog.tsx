@@ -17,6 +17,8 @@ type SimulatorConfigDialogProps = {
   onOpenChange: (open: boolean) => void
   onChange: (field: keyof SimulatorConfigForm, value: string) => void
   onSubmit: () => void
+  submitting?: boolean
+  errorMessage?: string
 }
 
 export function SimulatorConfigDialog({
@@ -26,6 +28,8 @@ export function SimulatorConfigDialog({
   onOpenChange,
   onChange,
   onSubmit,
+  submitting = false,
+  errorMessage,
 }: SimulatorConfigDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -84,12 +88,22 @@ export function SimulatorConfigDialog({
           </div>
         </div>
 
+        {errorMessage && <p className="text-sm text-red-600">{errorMessage}</p>}
+
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
             Cancelar
           </Button>
-          <Button className="bg-[#f26522] text-white" onClick={onSubmit}>
-            {mode === 'create' ? 'Guardar configuración' : 'Guardar cambios'}
+          <Button
+            className="bg-[#f26522] text-white"
+            onClick={onSubmit}
+            disabled={submitting}
+          >
+            {submitting
+              ? 'Guardando...'
+              : mode === 'create'
+                ? 'Guardar configuración'
+                : 'Guardar cambios'}
           </Button>
         </DialogFooter>
       </DialogContent>
