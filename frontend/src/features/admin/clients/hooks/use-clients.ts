@@ -1,5 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { initialClients, type ClientRecord } from '@/data/admin-clients'
+import { useCreateClient } from '@/features/clients/hooks/use-create-client'
+import { useUpdateClient } from '@/features/clients/hooks/use-update-client'
+import { useClientDetails } from '@/features/clients/hooks/use-client-details'
+import { useDeleteClient } from '@/features/clients/hooks/use-delete-client'
 
 type ClientDialogType = 'create' | 'edit' | 'delete' | 'view' | null
 
@@ -19,6 +23,9 @@ function createEmptyFormState(): ClientFormState {
 
 export function useClients(defaultClients: ClientRecord[] = initialClients) {
   const [clients, setClients] = useState<ClientRecord[]>(defaultClients)
+  useEffect(() => {
+    setClients(defaultClients)
+  }, [defaultClients])
   const [clientSearch, setClientSearch] = useState('')
   const [dialogType, setDialogType] = useState<ClientDialogType>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -55,37 +62,77 @@ export function useClients(defaultClients: ClientRecord[] = initialClients) {
     setActiveClient(null)
   }
 
+  const {
+    data: fetchedClient,
+    isFetching: loadingClientDetails,
+    error: clientDetailsError,
+  } = useClientDetails(activeClient?.id ?? null, {
+    enabled: Boolean(activeClient && dialogType && dialogType !== 'create'),
+  })
+  const resolvedActiveClient = fetchedClient ?? activeClient
+
+  useEffect(() => {
+    if (!resolvedActiveClient || dialogType !== 'edit') return
+    const { createdAt, id, ...rest } = resolvedActiveClient
+    setFormState(rest)
+  }, [resolvedActiveClient, dialogType])
+
+  const createClientMutation = useCreateClient({
+    onSuccess: () => {
+      closeDialog()
+    },
+  })
+  const updateClientMutation = useUpdateClient({
+    onSuccess: () => {
+      closeDialog()
+    },
+  })
+  const deleteClientMutation = useDeleteClient({
+    onSuccess: () => {
+      closeDialog()
+    },
+  })
+
   const handleFieldChange = (field: keyof ClientFormState, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleSaveClient = () => {
+  const handleSaveClient = async () => {
     if (!dialogType) return
 
     if (dialogType === 'create') {
-      const newClient: ClientRecord = {
-        id: Date.now(),
-        createdAt: new Date().toISOString(),
-        ...formState,
-      }
-      setClients((prev) => [newClient, ...prev])
+      await createClientMutation.mutateAsync({
+        nombre_completo: formState.nombreCompleto,
+        cedula: formState.cedula,
+        email: formState.email,
+        telefono: formState.telefono,
+        fecha_nacimiento: formState.fechaNacimiento,
+        direccion: formState.direccion,
+        info_adicional: formState.infoAdicional ? { notas: formState.infoAdicional } : undefined,
+      })
+      return
     }
 
     if (dialogType === 'edit' && activeClient) {
-      setClients((prev) =>
-        prev.map((client) => (client.id === activeClient.id ? { ...client, ...formState } : client)),
-      )
+      await updateClientMutation.mutateAsync({
+        clientId: activeClient.id,
+        payload: {
+          nombre_completo: formState.nombreCompleto,
+          email: formState.email,
+          telefono: formState.telefono,
+          direccion: formState.direccion,
+          info_adicional: formState.infoAdicional ? { notas: formState.infoAdicional } : undefined,
+        },
+      })
+      return
     }
 
     closeDialog()
   }
 
-  const handleDeleteClient = () => {
-    if (activeClient) {
-      setClients((prev) => prev.filter((client) => client.id !== activeClient.id))
-    }
-
-    closeDialog()
+  const handleDeleteClient = async () => {
+    if (!activeClient) return
+    await deleteClientMutation.mutateAsync(activeClient.id)
   }
 
   return {
@@ -96,10 +143,18 @@ export function useClients(defaultClients: ClientRecord[] = initialClients) {
     closeDialog,
     dialogOpen,
     dialogType,
-    activeClient,
+    activeClient: resolvedActiveClient,
     formState,
     handleFieldChange,
     handleSaveClient,
     handleDeleteClient,
+    creatingClient: createClientMutation.isPending,
+    createError: createClientMutation.error,
+    updatingClient: updateClientMutation.isPending,
+    updateError: updateClientMutation.error,
+    deletingClient: deleteClientMutation.isPending,
+    deleteError: deleteClientMutation.error,
+    loadingClientDetails,
+    clientDetailsError,
   }
 }
