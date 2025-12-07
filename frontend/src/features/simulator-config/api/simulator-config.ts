@@ -84,3 +84,19 @@ export async function createSimulatorConfig(
   const data: SimulatorConfigResponse = await response.json()
   return mapSimulatorConfig(data)
 }
+
+export async function activateSimulatorConfig(configId: number): Promise<SimulatorConfig> {
+  const response = await fetch(`${resolveResourceUrl()}/${configId}/activate`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    return parseError(response, 'No fue posible activar la configuración del simulador')
+  }
+
+  const data: SimulatorConfigResponse = await response.json()
+  return mapSimulatorConfig(data)
+}

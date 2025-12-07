@@ -5,6 +5,7 @@ import {
   type SimulatorConfig,
 } from '@/data/simulator-config'
 import { useCreateSimulatorConfig } from '@/features/simulator-config/hooks/use-create-simulator-config'
+import { useActivateSimulatorConfig } from '@/features/simulator-config/hooks/use-activate-simulator-config'
 
 export type SimulatorConfigForm = {
   tasaInteresMensual: string
@@ -111,6 +112,18 @@ export function useSimulatorConfigs(
     },
   })
 
+  const activateSimulatorConfigMutation = useActivateSimulatorConfig({
+    onSuccess: (activeConfig) => {
+      setSimConfigs((prev) =>
+        prev.map((config) => ({
+          ...config,
+          isActive: config.id === activeConfig.id,
+        })),
+      )
+      setSelectedConfigId(activeConfig.id)
+    },
+  })
+
   const handleFormChange = (field: keyof SimulatorConfigForm, value: string) => {
     setConfigForm((prev) => ({ ...prev, [field]: value }))
   }
@@ -153,6 +166,7 @@ export function useSimulatorConfigs(
 
   const handleSelectConfig = (configId: number) => {
     setSelectedConfigId(configId)
+    activateSimulatorConfigMutation.mutate(configId)
   }
 
   return {
@@ -169,5 +183,7 @@ export function useSimulatorConfigs(
     handleSelectConfig,
     savingConfig: createSimulatorConfigMutation.isPending,
     saveError: createSimulatorConfigMutation.error,
+    activatingConfig: activateSimulatorConfigMutation.isPending,
+    activateError: activateSimulatorConfigMutation.error,
   }
 }

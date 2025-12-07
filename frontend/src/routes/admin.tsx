@@ -35,6 +35,8 @@ function AdminPage() {
     handleSelectConfig,
     savingConfig,
     saveError,
+    activatingConfig,
+    activateError,
   } = useSimulatorConfigs(remoteSimulatorConfigs, activeBackendConfigId)
 
   const currencyFormatter = useMemo(() => {
@@ -78,6 +80,8 @@ function AdminPage() {
                 onEdit={(config) => openDialog('edit', config)}
                 onSelect={handleSelectConfig}
                 formatCurrency={(value) => currencyFormatter.format(value)}
+                activating={activatingConfig}
+                activateError={activateError?.message}
               />
             )
           )}

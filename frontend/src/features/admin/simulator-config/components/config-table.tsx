@@ -27,6 +27,8 @@ type ConfigTableProps = {
   onEdit: (config: SimulatorConfig) => void
   onSelect: (configId: number) => void
   formatCurrency: (value: number) => string
+  activating?: boolean
+  activateError?: string
 }
 
 export function SimulatorConfigTable({
@@ -37,6 +39,8 @@ export function SimulatorConfigTable({
   onEdit,
   onSelect,
   formatCurrency,
+  activating = false,
+  activateError,
 }: ConfigTableProps) {
   return (
     <section className="space-y-6">
@@ -53,6 +57,11 @@ export function SimulatorConfigTable({
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+        {activateError && (
+          <div className="border-b border-red-100 bg-red-50 px-4 py-2 text-sm text-red-600">
+            {activateError}
+          </div>
+        )}
         <Table>
           <TableHeader className="bg-slate-50">
             <TableRow>
@@ -108,7 +117,9 @@ export function SimulatorConfigTable({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => onEdit(config)}>Editar</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onSelect(config.id)}>Seleccionar</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onSelect(config.id)} disabled={activating}>
+                        {activating && selectedConfigId === config.id ? 'Activando...' : 'Seleccionar'}
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

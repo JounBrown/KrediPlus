@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CheckCircle2 } from 'lucide-react'
+import { useCreditSimulation } from '@/features/simulator/hooks/use-credit-simulation'
 
 const currencyFormatter = new Intl.NumberFormat('es-CO', {
   style: 'currency',
@@ -73,6 +74,14 @@ export function CreditSimulator(props: CreditSimulatorProps) {
   const [amount, setAmount] = useState(() => clampAmount(initialAmount ?? minAmount, minAmount, maxAmount))
   const [term, setTerm] = useState(() => (initialTerm ?? terms[0] ?? 12).toString())
   const [manualAmount, setManualAmount] = useState(() => amount.toString())
+  const [lastSimulatedKey, setLastSimulatedKey] = useState<string | null>(null)
+  const {
+    mutate: runSimulation,
+    data: simulationResult,
+    isPending: isSimulating,
+    isError: simulationHasError,
+    error: simulationError,
+  } = useCreditSimulation()
 
   useEffect(() => {
     setAmount((prev) => clampAmount(prev, minAmount, maxAmount))
@@ -111,8 +120,10 @@ export function CreditSimulator(props: CreditSimulatorProps) {
     })
   }, [mode, amount, showModeToggle])
 
+  const selectedTerm = Number(term) || 1
+
   const estimatedPayment = useMemo(() => {
-    const months = Number(term) || 1
+    const months = selectedTerm
     const monthlyRateDecimal = monthlyRate / 100
     if (monthlyRateDecimal <= 0) {
       return amount / months
@@ -121,10 +132,16 @@ export function CreditSimulator(props: CreditSimulatorProps) {
     const denominator = 1 - Math.pow(1 + monthlyRateDecimal, -months)
     if (denominator === 0) return 0
     return numerator / denominator
-  }, [amount, term, monthlyRate])
+  }, [amount, selectedTerm, monthlyRate])
 
   const formattedAmount = currencyFormatter.format(amount)
   const formattedPayment = currencyFormatter.format(Math.round(estimatedPayment || 0))
+  const currentSimulationKey = `${amount}-${selectedTerm}`
+  const activeSimulationResult =
+    simulationResult && lastSimulatedKey === currentSimulationKey ? simulationResult : null
+  const simulationRatePercent = activeSimulationResult
+    ? (activeSimulationResult.monthlyRate * 100).toFixed(2)
+    : null
 
   const handleManualChange = (value: string) => {
     const sanitized = value.replace(/[^0-9]/g, '')
@@ -138,6 +155,21 @@ export function CreditSimulator(props: CreditSimulatorProps) {
     const clamped = clampAmount(Number.isNaN(numeric) ? minAmount : numeric, minAmount, maxAmount)
     setAmount(clamped)
     setManualAmount(clamped.toString())
+  }
+
+  const handleSimulate = () => {
+    const simulationTerm = selectedTerm || terms[0] || 12
+    const simulationAmount = amount
+    const simulationKey = `${simulationAmount}-${simulationTerm}`
+    setLastSimulatedKey(null)
+    runSimulation(
+      { amount: simulationAmount, termMonths: simulationTerm },
+      {
+        onSuccess: () => {
+          setLastSimulatedKey(simulationKey)
+        },
+      },
+    )
   }
 
   return (
@@ -236,7 +268,52 @@ export function CreditSimulator(props: CreditSimulatorProps) {
               <p className="text-xs text-white/80">Tasas calculadas con {monthlyRate.toFixed(2)}% mensual</p>
             </div>
 
-            <Button className="w-full bg-[#f26522] text-white hover:bg-[#d85314]">{actionLabel}</Button>
+            <Button
+              type="button"
+              className="w-full bg-[#f26522] text-white hover:bg-[#d85314]"
+              onClick={handleSimulate}
+              disabled={isSimulating}
+            >
+              {isSimulating ? 'Calculando...' : actionLabel}
+            </Button>
+
+            {simulationHasError && (
+              <p className="text-sm text-red-600">
+                {simulationError?.message || 'No fue posible simular el crédito.'}
+              </p>
+            )}
+
+            {activeSimulationResult && (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <p className="text-xs font-semibold uppercase text-[#f26522]">Resultado oficial</p>
+                  <p className="text-xs text-slate-500">
+                    Tasa{' '}
+                    {simulationRatePercent ? `${simulationRatePercent}% mensual` : 'no disponible'}
+                  </p>
+                </div>
+                <div className="mt-3 grid gap-4 sm:grid-cols-3">
+                  <div>
+                    <p className="text-xs text-slate-500">Cuota mensual</p>
+                    <p className="text-lg font-bold text-[#0d2f62]">
+                      {currencyFormatter.format(Math.round(activeSimulationResult.monthlyPayment))}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Total a pagar</p>
+                    <p className="text-lg font-bold text-[#0d2f62]">
+                      {currencyFormatter.format(Math.round(activeSimulationResult.totalToPay))}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Total intereses</p>
+                    <p className="text-lg font-bold text-[#0d2f62]">
+                      {currencyFormatter.format(Math.round(activeSimulationResult.totalInterests))}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
