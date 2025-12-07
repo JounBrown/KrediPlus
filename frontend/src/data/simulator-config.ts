@@ -1,10 +1,11 @@
 export type SimulatorConfig = {
   id: number
-  createdAt: string
+  createdAt?: string
   tasaInteresMensual: number
   montoMinimo: number
   montoMaximo: number
   plazosDisponibles: number[]
+  isActive?: boolean
 }
 
 export const initialSimulatorConfigs: SimulatorConfig[] = [
@@ -15,6 +16,7 @@ export const initialSimulatorConfigs: SimulatorConfig[] = [
     montoMinimo: 1_000_000,
     montoMaximo: 140_000_000,
     plazosDisponibles: [12, 24, 36, 48, 60],
+    isActive: true,
   },
   {
     id: 2,
@@ -23,6 +25,7 @@ export const initialSimulatorConfigs: SimulatorConfig[] = [
     montoMinimo: 5_000_000,
     montoMaximo: 60_000_000,
     plazosDisponibles: [24, 36, 48, 60],
+    isActive: false,
   },
 ]
 

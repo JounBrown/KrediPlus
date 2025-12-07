@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   defaultSimulatorConfig,
   initialSimulatorConfigs,
@@ -28,17 +28,36 @@ function parsePlazos(value: string) {
 
 export function useSimulatorConfigs(
   initialConfigs: SimulatorConfig[] = initialSimulatorConfigs,
-  defaultSelectionId: number = defaultSimulatorConfig.id,
+  defaultSelectionId: number | null = defaultSimulatorConfig.id,
 ) {
   const [simConfigs, setSimConfigs] = useState<SimulatorConfig[]>(initialConfigs)
-  const [selectedConfigId, setSelectedConfigId] = useState<number>(defaultSelectionId)
+  const [selectedConfigId, setSelectedConfigId] = useState<number | null>(
+    defaultSelectionId ?? initialConfigs[0]?.id ?? null,
+  )
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create')
   const [activeSimConfig, setActiveSimConfig] = useState<SimulatorConfig | null>(null)
   const [configForm, setConfigForm] = useState<SimulatorConfigForm>(emptyForm)
 
+  useEffect(() => {
+    setSimConfigs(initialConfigs)
+  }, [initialConfigs])
+
+  useEffect(() => {
+    setSelectedConfigId((prev) => {
+      if (prev && initialConfigs.some((config) => config.id === prev)) {
+        return prev
+      }
+      if (defaultSelectionId && initialConfigs.some((config) => config.id === defaultSelectionId)) {
+        return defaultSelectionId
+      }
+      return initialConfigs[0]?.id ?? null
+    })
+  }, [initialConfigs, defaultSelectionId])
+
   const selectedConfig = useMemo(() => {
     if (!simConfigs.length) return null
+    if (selectedConfigId == null) return simConfigs[0]
     return simConfigs.find((config) => config.id === selectedConfigId) ?? simConfigs[0]
   }, [simConfigs, selectedConfigId])
 

@@ -84,11 +84,13 @@ export function SimulatorConfigTable({
                   </div>
                 </TableCell>
                 <TableCell>
-                  {new Date(config.createdAt).toLocaleDateString('es-CO', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
+                  {config.createdAt
+                    ? new Date(config.createdAt).toLocaleDateString('es-CO', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })
+                    : 'Sin fecha'}
                 </TableCell>
                 <TableCell>{config.tasaInteresMensual.toFixed(2)}%</TableCell>
                 <TableCell>{formatCurrency(config.montoMinimo)}</TableCell>
@@ -116,24 +118,33 @@ export function SimulatorConfigTable({
         </Table>
       </div>
 
-      {selectedConfig && (
-        <div className="space-y-3">
-          <CreditSimulator
-            key={selectedConfig.id}
-            minAmount={selectedConfig.montoMinimo}
-            maxAmount={selectedConfig.montoMaximo}
-            monthlyRate={selectedConfig.tasaInteresMensual}
-            terms={selectedConfig.plazosDisponibles}
-            initialAmount={selectedConfig.montoMinimo}
-            initialTerm={selectedConfig.plazosDisponibles[0]}
-            showModeToggle
-          />
-          <p className="text-center text-sm text-slate-500">
-            Configuración activa #{selectedConfig.id} creada el{' '}
-            {new Date(selectedConfig.createdAt).toLocaleDateString('es-CO')}
-          </p>
-        </div>
-      )}
+      {selectedConfig && (() => {
+        const previewTerms = selectedConfig.plazosDisponibles.length
+          ? selectedConfig.plazosDisponibles
+          : [12]
+        const previewInitialTerm = previewTerms[0]
+
+        return (
+          <div className="space-y-3">
+            <CreditSimulator
+              key={selectedConfig.id}
+              minAmount={selectedConfig.montoMinimo}
+              maxAmount={selectedConfig.montoMaximo}
+              monthlyRate={selectedConfig.tasaInteresMensual}
+              terms={previewTerms}
+              initialAmount={selectedConfig.montoMinimo}
+              initialTerm={previewInitialTerm}
+              showModeToggle
+            />
+            <p className="text-center text-sm text-slate-500">
+              Configuración activa #{selectedConfig.id} creada el{' '}
+              {selectedConfig.createdAt
+                ? new Date(selectedConfig.createdAt).toLocaleDateString('es-CO')
+                : 'fecha no disponible'}
+            </p>
+          </div>
+        )
+      })()}
     </section>
   )
 }

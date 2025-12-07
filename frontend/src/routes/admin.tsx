@@ -8,10 +8,19 @@ import { ClientTable } from '@/features/admin/clients/components/client-table'
 import { SimulatorConfigTable } from '@/features/admin/simulator-config/components/config-table'
 import { SimulatorConfigDialog } from '@/features/admin/simulator-config/components/config-dialog'
 import { useSimulatorConfigs } from '@/features/admin/simulator-config/hooks/use-simulator-configs'
+import { useSimulatorConfigsQuery } from '@/features/simulator-config/hooks/use-simulator-configs-query'
 import { AppLayout } from '@/components/layout/app-layout'
 
 function AdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTabId>('requests')
+  const {
+    data: remoteSimulatorConfigs = [],
+    isLoading: isSimulatorLoading,
+    isError: simulatorError,
+    error: simulatorErrorData,
+  } = useSimulatorConfigsQuery()
+  const activeBackendConfigId =
+    remoteSimulatorConfigs.find((config) => config.isActive)?.id ?? remoteSimulatorConfigs[0]?.id ?? null
   const {
     simConfigs,
     selectedConfigId,
@@ -24,7 +33,7 @@ function AdminPage() {
     handleFormChange,
     handleSaveConfig,
     handleSelectConfig,
-  } = useSimulatorConfigs()
+  } = useSimulatorConfigs(remoteSimulatorConfigs, activeBackendConfigId)
 
   const currencyFormatter = useMemo(() => {
     return new Intl.NumberFormat('es-CO', {
@@ -52,15 +61,23 @@ function AdminPage() {
           ) : activeTab === 'clients' ? (
             <ClientTable />
           ) : (
-            <SimulatorConfigTable
-              configs={simConfigs}
-              selectedConfigId={selectedConfigId}
-              selectedConfig={selectedConfig}
-              onCreate={() => openDialog('create')}
-              onEdit={(config) => openDialog('edit', config)}
-              onSelect={handleSelectConfig}
-              formatCurrency={(value) => currencyFormatter.format(value)}
-            />
+            isSimulatorLoading ? (
+              <div className="py-16 text-center text-sm text-slate-500">Cargando configuraciones...</div>
+            ) : simulatorError ? (
+              <div className="py-16 text-center text-sm text-red-600">
+                {simulatorErrorData?.message || 'No fue posible cargar las configuraciones del simulador.'}
+              </div>
+            ) : (
+              <SimulatorConfigTable
+                configs={simConfigs}
+                selectedConfigId={selectedConfigId}
+                selectedConfig={selectedConfig}
+                onCreate={() => openDialog('create')}
+                onEdit={(config) => openDialog('edit', config)}
+                onSelect={handleSelectConfig}
+                formatCurrency={(value) => currencyFormatter.format(value)}
+              />
+            )
           )}
         </div>
       </AppLayout>
