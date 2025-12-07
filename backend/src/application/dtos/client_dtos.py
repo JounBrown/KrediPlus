@@ -9,6 +9,23 @@ class CreateClientRequest(BaseModel):
     cedula: str = Field(..., min_length=8, max_length=20)
     email: str = Field(..., min_length=5, max_length=255)
     telefono: str = Field(..., min_length=7, max_length=20)
+    
+    @validator('telefono')
+    def validate_telefono(cls, v):
+        import re
+        # Remove spaces and special characters
+        phone_clean = re.sub(r'[\s\-\(\)]', '', v)
+        
+        # Colombian mobile patterns
+        patterns = [
+            r'^\+57[3][0-9]{9}$',  # +573001234567
+            r'^57[3][0-9]{9}$',    # 573001234567
+            r'^[3][0-9]{9}$'       # 3001234567
+        ]
+        
+        if not any(re.match(pattern, phone_clean) for pattern in patterns):
+            raise ValueError('Teléfono debe ser un número colombiano válido (ej: 3001234567)')
+        return v
     fecha_nacimiento: date
     direccion: str = Field(..., min_length=5, max_length=500)
     info_adicional: Optional[Dict[str, Any]] = None
@@ -16,8 +33,8 @@ class CreateClientRequest(BaseModel):
     @validator('cedula')
     def validate_cedula(cls, v):
         cedula_digits = ''.join(filter(str.isdigit, v))
-        if not (8 <= len(cedula_digits) <= 11):
-            raise ValueError('Cédula debe tener entre 8 y 11 dígitos')
+        if not (7 <= len(cedula_digits) <= 10):
+            raise ValueError(f'Cédula debe tener entre 7 y 10 dígitos (actual: {len(cedula_digits)} dígitos)')
         return v
     
     @validator('email')
@@ -34,8 +51,8 @@ class CreateClientRequest(BaseModel):
         age = today.year - v.year
         if today.month < v.month or (today.month == v.month and today.day < v.day):
             age -= 1
-        if age < 18:
-            raise ValueError('El cliente debe ser mayor de edad (18 años)')
+        if age < 22:
+            raise ValueError(f'El cliente debe tener al menos 22 años (edad actual: {age} años)')
         return v
 
 

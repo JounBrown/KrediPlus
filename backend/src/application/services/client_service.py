@@ -44,7 +44,9 @@ class ClientService:
         
         # Validate business rules
         if not client.validate():
-            raise ValueError("Los datos del cliente no son válidos")
+            validation_errors = client.get_validation_errors()
+            error_message = "Errores de validación: " + "; ".join(validation_errors)
+            raise ValueError(error_message)
         
         # Save to repository
         try:
@@ -129,7 +131,9 @@ class ClientService:
         
         # Validate updated data
         if not client.validate():
-            raise ValueError("Los datos actualizados del cliente no son válidos")
+            validation_errors = client.get_validation_errors()
+            error_message = "Errores de validación en actualización: " + "; ".join(validation_errors)
+            raise ValueError(error_message)
         
         try:
             updated_client = await self._client_repository.update(client)

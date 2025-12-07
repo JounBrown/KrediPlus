@@ -64,9 +64,9 @@ class Client:
         # Colombian cedula: 7 to 10 digits
         return 7 <= len(cedula_digits) <= 10 and cedula_digits.isdigit()
     
-    # 4. Validación de edad (70-110 años)
+    # 4. Validación de edad (mínimo 22 años)
     def validate_age(self) -> bool:
-        """Validate that client age is between 70 and 110 years"""
+        """Validate that client age is at least 22 years"""
         if not self.fecha_nacimiento:
             return False
         
@@ -78,7 +78,7 @@ class Client:
            (today.month == self.fecha_nacimiento.month and today.day < self.fecha_nacimiento.day):
             age -= 1
         
-        return 70 <= age <= 110
+        return age >= 22
     
     def get_age(self) -> int:
         """Calculate and return current age"""
@@ -189,6 +189,6 @@ class Client:
             errors.append("Formato de cédula inválido (7-10 dígitos)")
         
         if not self.validate_age():
-            errors.append(f"Edad inválida: {self.get_age()} años (debe estar entre 70 y 110 años)")
+            errors.append(f"Edad inválida: {self.get_age()} años (debe ser mayor de 22 años)")
         
         return errors
