@@ -1,11 +1,11 @@
 from typing import List, Optional
 from src.domain.ports.loan_application_repository import LoanApplicationRepositoryPort
 from src.application.services.create_loan_application_service import CreateLoanApplicationService
-from src.application.services.update_loan_application_status_service import UpdateLoanApplicationStatusService
+
 from src.application.services.list_client_loan_applications_service import ListClientLoanApplicationsService
 from src.application.dtos.loan_application_dtos import (
     CreateLoanApplicationRequest,
-    UpdateLoanApplicationStatusRequest,
+    UpdateLoanApplicationRequest,
     ListClientLoanApplicationsRequest,
     LoanApplicationResponse,
     LoanApplicationListResponse,
@@ -24,7 +24,6 @@ class LoanApplicationService:
         
         # Initialize use case services
         self._create_service = CreateLoanApplicationService(loan_application_repository)
-        self._update_status_service = UpdateLoanApplicationStatusService(loan_application_repository)
         self._list_client_service = ListClientLoanApplicationsService(loan_application_repository)
     
     # Create operations
@@ -32,22 +31,40 @@ class LoanApplicationService:
         """Create a new loan application"""
         return await self._create_service.execute(request)
     
-    # Status update operations
-    async def update_application_status(self, request: UpdateLoanApplicationStatusRequest) -> LoanApplicationResponse:
-        """Update loan application status"""
-        return await self._update_status_service.execute(request)
-    
-    async def approve_application(self, application_id: int) -> LoanApplicationResponse:
-        """Approve a loan application"""
-        return await self._update_status_service.approve_application(application_id)
-    
-    async def reject_application(self, application_id: int, notes: Optional[str] = None) -> LoanApplicationResponse:
-        """Reject a loan application"""
-        return await self._update_status_service.reject_application(application_id, notes)
-    
-    async def cancel_application(self, application_id: int, notes: Optional[str] = None) -> LoanApplicationResponse:
-        """Cancel a loan application"""
-        return await self._update_status_service.cancel_application(application_id, notes)
+    # Update operations
+    async def update_application(self, application_id: int, request: UpdateLoanApplicationRequest) -> LoanApplicationResponse:
+        """Update loan application"""
+        try:
+            # Get existing application
+            application = await self._loan_application_repository.get_by_id(application_id)
+            if not application:
+                raise Exception(f"Solicitud con ID {application_id} no encontrada")
+            
+            # Update fields if provided
+            if request.name is not None:
+                application.name = request.name
+            if request.convenio is not None:
+                application.convenio = request.convenio
+            if request.telefono is not None:
+                application.telefono = request.telefono
+            if request.fecha_nacimiento is not None:
+                application.fecha_nacimiento = request.fecha_nacimiento
+            
+            # Save updated application
+            updated_application = await self._loan_application_repository.update(application)
+            
+            return LoanApplicationResponse(
+                id=updated_application.id,
+                name=updated_application.name,
+                cedula=updated_application.cedula,
+                convenio=updated_application.convenio,
+                telefono=updated_application.telefono,
+                fecha_nacimiento=updated_application.fecha_nacimiento,
+                created_at=updated_application.created_at
+            )
+            
+        except Exception as e:
+            raise Exception(f"Error al actualizar solicitud: {str(e)}")
     
     # Query operations
     async def get_application_by_id(self, application_id: int) -> Optional[LoanApplicationResponse]:
@@ -63,9 +80,6 @@ class LoanApplicationService:
             convenio=application.convenio,
             telefono=application.telefono,
             fecha_nacimiento=application.fecha_nacimiento,
-            monto_solicitado=application.monto_solicitado,
-            plazo=application.plazo,
-            estado=application.estado,
             created_at=application.created_at
         )
     
@@ -77,20 +91,18 @@ class LoanApplicationService:
         """Get summary of client's loan applications"""
         return await self._list_client_service.get_client_application_summary(cedula)
     
-    async def get_pending_applications_for_client(self, cedula: str) -> List[LoanApplicationResponse]:
-        """Get pending applications for a client"""
-        return await self._list_client_service.get_pending_applications_for_client(cedula)
+
     
     # Admin operations
-    async def list_all_applications(self, status_filter: Optional[str] = None, 
+    async def list_all_applications(self, convenio_filter: Optional[str] = None, 
                                   skip: int = 0, limit: int = 20) -> LoanApplicationListResponse:
-        """List all applications with optional status filter"""
+        """List all applications with optional convenio filter"""
         try:
-            if status_filter:
-                applications = await self._loan_application_repository.get_by_status(
-                    status_filter, skip, limit
+            if convenio_filter:
+                applications = await self._loan_application_repository.get_by_convenio(
+                    convenio_filter, skip, limit
                 )
-                total = await self._loan_application_repository.count_by_status(status_filter)
+                total = await self._loan_application_repository.count_by_convenio(convenio_filter)
             else:
                 applications = await self._loan_application_repository.get_all(skip, limit)
                 total = await self._loan_application_repository.count_total()
@@ -106,9 +118,6 @@ class LoanApplicationService:
                         convenio=app.convenio,
                         telefono=app.telefono,
                         fecha_nacimiento=app.fecha_nacimiento,
-                        monto_solicitado=app.monto_solicitado,
-                        plazo=app.plazo,
-                        estado=app.estado,
                         created_at=app.created_at
                     )
                 )
@@ -136,14 +145,8 @@ class LoanApplicationService:
             
             return LoanApplicationStatsResponse(
                 total_applications=stats.get('total', 0),
-                nueva=stats.get('nueva', 0),
-                en_proceso=stats.get('en_proceso', 0),
-                aprobada=stats.get('aprobada', 0),
-                rechazada=stats.get('rechazada', 0),
-                cancelada=stats.get('cancelada', 0),
-                total_amount_requested=stats.get('total_amount', 0.0),
-                average_amount=stats.get('average_amount', 0.0),
-                average_term=stats.get('average_term', 0.0)
+                applications_by_convenio=stats.get('by_convenio', {}),
+                applications_by_month=stats.get('by_month', {})
             )
             
         except Exception as e:
@@ -171,9 +174,6 @@ class LoanApplicationService:
                         convenio=app.convenio,
                         telefono=app.telefono,
                         fecha_nacimiento=app.fecha_nacimiento,
-                        monto_solicitado=app.monto_solicitado,
-                        plazo=app.plazo,
-                        estado=app.estado,
                         created_at=app.created_at
                     )
                 )

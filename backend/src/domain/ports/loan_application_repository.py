@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from src.domain.entities.loan_application import LoanApplication, ApplicationStatus
+from src.domain.entities.loan_application import LoanApplication
 
 
 class LoanApplicationRepositoryPort(ABC):
@@ -27,13 +27,8 @@ class LoanApplicationRepositoryPort(ABC):
         pass
     
     @abstractmethod
-    async def get_by_status(self, status: str, skip: int = 0, limit: int = 100) -> List[LoanApplication]:
-        """Get applications by status"""
-        pass
-    
-    @abstractmethod
-    async def get_pending_applications(self, skip: int = 0, limit: int = 100) -> List[LoanApplication]:
-        """Get applications that need processing (nueva, en_proceso)"""
+    async def get_by_convenio(self, convenio: str, skip: int = 0, limit: int = 100) -> List[LoanApplication]:
+        """Get applications by convenio"""
         pass
     
     @abstractmethod
@@ -57,13 +52,8 @@ class LoanApplicationRepositoryPort(ABC):
         pass
     
     @abstractmethod
-    async def update_status(self, application_id: int, new_status: str) -> bool:
-        """Update application status"""
-        pass
-    
-    @abstractmethod
-    async def count_by_status(self, status: str) -> int:
-        """Count applications by status"""
+    async def count_by_convenio(self, convenio: str) -> int:
+        """Count applications by convenio"""
         pass
     
     @abstractmethod
@@ -73,5 +63,5 @@ class LoanApplicationRepositoryPort(ABC):
     
     @abstractmethod
     async def get_statistics(self) -> dict:
-        """Get application statistics (counts by status, etc.)"""
+        """Get application statistics (counts by convenio, etc.)"""
         pass

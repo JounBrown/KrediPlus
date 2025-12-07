@@ -1,7 +1,6 @@
 from datetime import date, datetime
 from typing import Optional, List
 from pydantic import BaseModel, Field, validator
-from src.domain.entities.loan_application import ApplicationStatus
 
 
 class CreateLoanApplicationRequest(BaseModel):
@@ -11,8 +10,6 @@ class CreateLoanApplicationRequest(BaseModel):
     convenio: Optional[str] = Field(None, max_length=100)
     telefono: str = Field(..., min_length=7, max_length=20)
     fecha_nacimiento: date
-    monto_solicitado: float = Field(..., gt=0, le=100000000)
-    plazo: int = Field(..., gt=0, le=120)
     
     @validator('cedula')
     def validate_cedula(cls, v):
@@ -31,34 +28,24 @@ class CreateLoanApplicationRequest(BaseModel):
         if age < 18:
             raise ValueError('El solicitante debe ser mayor de edad (18 años)')
         return v
-    
-    @validator('monto_solicitado')
-    def validate_amount(cls, v):
-        if v < 100000:  # Minimum 100,000
-            raise ValueError('El monto mínimo es $100,000')
-        if v > 50000000:  # Maximum 50,000,000
-            raise ValueError('El monto máximo es $50,000,000')
-        return v
-    
-    @validator('plazo')
-    def validate_term(cls, v):
-        valid_terms = [6, 12, 18, 24, 36, 48, 60, 72]
-        if v not in valid_terms:
-            raise ValueError(f'Plazo debe ser uno de: {valid_terms} meses')
-        return v
 
 
-class UpdateLoanApplicationStatusRequest(BaseModel):
-    """DTO for updating loan application status"""
-    application_id: int = Field(..., gt=0)
-    new_status: str = Field(...)
-    notes: Optional[str] = Field(None, max_length=1000)
+class UpdateLoanApplicationRequest(BaseModel):
+    """DTO for updating loan application"""
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    convenio: Optional[str] = Field(None, max_length=100)
+    telefono: Optional[str] = Field(None, min_length=7, max_length=20)
+    fecha_nacimiento: Optional[date] = None
     
-    @validator('new_status')
-    def validate_status(cls, v):
-        valid_statuses = [status.value for status in ApplicationStatus]
-        if v not in valid_statuses:
-            raise ValueError(f'Estado debe ser uno de: {valid_statuses}')
+    @validator('fecha_nacimiento')
+    def validate_age(cls, v):
+        if v is not None:
+            today = date.today()
+            age = today.year - v.year
+            if today.month < v.month or (today.month == v.month and today.day < v.day):
+                age -= 1
+            if age < 18:
+                raise ValueError('El solicitante debe ser mayor de edad (18 años)')
         return v
 
 
@@ -70,9 +57,6 @@ class LoanApplicationResponse(BaseModel):
     convenio: Optional[str]
     telefono: str
     fecha_nacimiento: date
-    monto_solicitado: float
-    plazo: int
-    estado: str
     created_at: datetime
     
     class Config:
@@ -91,27 +75,12 @@ class LoanApplicationListResponse(BaseModel):
 class LoanApplicationStatsResponse(BaseModel):
     """DTO for loan application statistics"""
     total_applications: int
-    nueva: int
-    en_proceso: int
-    aprobada: int
-    rechazada: int
-    cancelada: int
-    total_amount_requested: float
-    average_amount: float
-    average_term: float
+    applications_by_convenio: dict
+    applications_by_month: dict
 
 
 class ListClientLoanApplicationsRequest(BaseModel):
     """DTO for listing client loan applications"""
     cedula: str = Field(..., min_length=8, max_length=20)
-    status_filter: Optional[str] = None
     skip: int = Field(0, ge=0)
     limit: int = Field(20, ge=1, le=100)
-    
-    @validator('status_filter')
-    def validate_status_filter(cls, v):
-        if v is not None:
-            valid_statuses = [status.value for status in ApplicationStatus]
-            if v not in valid_statuses:
-                raise ValueError(f'Estado debe ser uno de: {valid_statuses}')
-        return v

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.config import DEBUG, HOST, PORT
+from src.config import DEBUG, HOST, PORT, CORS_ORIGINS
 from src.api.routes.loan_applications import router as loan_applications_router
 from src.api.routes.clients import router as clients_router
 from src.api.routes.credits import router as credits_router
@@ -14,12 +14,12 @@ app = FastAPI(
     debug=DEBUG
 )
 
-# CORS Configuration
+# CORS Configuration - Only allow specific frontend origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 

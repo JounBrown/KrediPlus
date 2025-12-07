@@ -16,9 +16,6 @@ class ApplicationModel(Base):
     convenio = Column(Text, nullable=True)
     telefono = Column(Text, nullable=False)
     fecha_nacimiento = Column(Date, nullable=False)
-    monto_solicitado = Column(Float, nullable=False)
-    plazo = Column(Integer, nullable=False)
-    estado = Column(Text, nullable=False, default="nueva")
 
 
 class ClientModel(Base):

@@ -37,9 +37,6 @@ class CreateLoanApplicationService:
             convenio=request.convenio.strip() if request.convenio else None,
             telefono=request.telefono.strip(),
             fecha_nacimiento=request.fecha_nacimiento,
-            monto_solicitado=request.monto_solicitado,
-            plazo=request.plazo,
-            estado="nueva",  # Default status
             created_at=datetime.now()
         )
         
@@ -47,22 +44,15 @@ class CreateLoanApplicationService:
         if not loan_application.validate_application_data():
             raise ValueError("Los datos de la solicitud no son válidos")
         
-        # Check if there's already a pending application for this cedula
+        # Check if there's already an application for this cedula (optional business rule)
         existing_applications = await self._loan_application_repository.get_by_cedula(
             loan_application.cedula
         )
         
-        # Check for pending applications (nueva or en_proceso)
-        pending_applications = [
-            app for app in existing_applications 
-            if app.estado in ["nueva", "en_proceso"]
-        ]
-        
-        if pending_applications:
-            raise ValueError(
-                "Ya existe una solicitud pendiente para esta cédula. "
-                "Complete el proceso actual antes de crear una nueva solicitud."
-            )
+        if existing_applications:
+            # You can implement business rules here if needed
+            # For now, we'll allow multiple applications per cedula
+            pass
         
         # Save to repository
         try:
@@ -76,9 +66,6 @@ class CreateLoanApplicationService:
                 convenio=created_application.convenio,
                 telefono=created_application.telefono,
                 fecha_nacimiento=created_application.fecha_nacimiento,
-                monto_solicitado=created_application.monto_solicitado,
-                plazo=created_application.plazo,
-                estado=created_application.estado,
                 created_at=created_application.created_at
             )
             

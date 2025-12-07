@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.application.services.loan_application_service import LoanApplicationService
 from src.application.dtos.loan_application_dtos import (
     CreateLoanApplicationRequest,
-    UpdateLoanApplicationStatusRequest,
+    UpdateLoanApplicationRequest,
     ListClientLoanApplicationsRequest,
     LoanApplicationResponse,
     LoanApplicationListResponse,
@@ -36,8 +36,6 @@ async def create_loan_application(
     - **convenio**: Optional agreement/convention
     - **telefono**: Phone number
     - **fecha_nacimiento**: Birth date (must be 18+ years old)
-    - **monto_solicitado**: Requested amount (100,000 - 50,000,000)
-    - **plazo**: Term in months (6, 12, 18, 24, 36, 48, 60, 72)
     """
     try:
         return await service.create_application(request)
@@ -72,7 +70,7 @@ async def list_loan_applications(
     List all loan applications
     """
     try:
-        result = await service.list_all_applications(status_filter=None, skip=0, limit=1000)
+        result = await service.list_all_applications(convenio_filter=None, skip=0, limit=1000)
         return result.applications  # Solo devolver la lista, sin metadatos
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error listing applications: {str(e)}")
@@ -91,7 +89,6 @@ async def get_applications_by_cedula(
     try:
         request = ListClientLoanApplicationsRequest(
             cedula=cedula,
-            status_filter=None,
             skip=0,
             limit=100
         )
@@ -106,26 +103,26 @@ async def get_applications_by_cedula(
 
 
 
-@router.put("/{application_id}/status", response_model=LoanApplicationResponse)
-async def update_application_status(
+@router.put("/{application_id}", response_model=LoanApplicationResponse)
+async def update_application(
     application_id: int,
-    request: UpdateLoanApplicationStatusRequest,
+    request: UpdateLoanApplicationRequest,
     service: LoanApplicationService = Depends(get_loan_application_service)
 ):
     """
-    Update loan application status
+    Update loan application
     
-    - **new_status**: New status (nueva, en_proceso, aprobada, rechazada, cancelada)
-    - **notes**: Optional notes about the status change
+    - **name**: Full name of the applicant
+    - **convenio**: Optional agreement/convention
+    - **telefono**: Phone number
+    - **fecha_nacimiento**: Birth date (must be 18+ years old)
     """
     try:
-        # Ensure the application_id matches
-        request.application_id = application_id
-        return await service.update_application_status(request)
+        return await service.update_application(application_id, request)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error updating application status: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error updating application: {str(e)}")
 
 
 
