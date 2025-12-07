@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ShieldCheck, CalendarIcon } from 'lucide-react'
+import { ShieldCheck, CalendarIcon, Check, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select'
 import { useSubmitForm } from '../hooks/use-submit-form'
 import type { SubmitFormPayload } from '../types/loan-application'
+import { useCreateLoanApplication } from '@/features/loan-applications/hooks/use-create-loan-application'
 
 type SubmitFormCardProps = {
   className?: string
@@ -26,10 +27,15 @@ type SubmitFormCardProps = {
 }
 
 const convenioOptions = [
-  { value: 'fondo', label: 'Fondo de pensiones' },
-  { value: 'pagaduria', label: 'Pagaduría aliada' },
-  { value: 'otros', label: 'Otro convenio' },
-]
+  'Colpensiones',
+  'Colfondos',
+  'FOPEP',
+  'Porvenir',
+  'Fiduprevisora',
+  'CASUR',
+  'CREMIL',
+  'Sin convenio',
+].map((option) => ({ value: option, label: option }))
 
 export function SubmitFormCard({
   className,
@@ -37,13 +43,44 @@ export function SubmitFormCard({
   subtitle = 'Obtén tu crédito rápido y fácil',
   ctaLabel = 'Solicitar mi crédito',
   onSubmit,
-  defaultMontoSolicitado = 0,
-  defaultPlazo = 0,
+  defaultMontoSolicitado = 100000,
+  defaultPlazo = 6,
   defaultEstado = 'pendiente',
 }: SubmitFormCardProps) {
   const [convenio, setConvenio] = useState<string | undefined>(undefined)
   const [policyAccepted, setPolicyAccepted] = useState(false)
-  const { handleSubmit, isSubmitting } = useSubmitForm({ onSubmit })
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const loanApplicationMutation = useCreateLoanApplication({
+    onSuccess: () => {
+      setFeedback({ type: 'success', message: 'Solicitud enviada correctamente. Te contactaremos pronto.' })
+      setConvenio(undefined)
+      setPolicyAccepted(false)
+    },
+    onError: (error) => {
+      setFeedback({ type: 'error', message: error.message })
+    },
+  })
+  const { handleSubmit, isSubmitting } = useSubmitForm({
+    onSubmit: async (payload) => {
+      if (onSubmit) {
+        await onSubmit({ ...payload })
+        return
+      }
+
+      const apiPayload = {
+        name: payload.name,
+        cedula: payload.cedula,
+        convenio: payload.convenio,
+        telefono: payload.telefono,
+        fecha_nacimiento: payload.fecha_nacimiento,
+        monto_solicitado: payload.monto_solicitado,
+        plazo: payload.plazo,
+      }
+
+      setFeedback(null)
+      await loanApplicationMutation.mutateAsync(apiPayload)
+    },
+  })
 
   return (
     <form
@@ -59,6 +96,20 @@ export function SubmitFormCard({
       </div>
 
       <div className="space-y-4 px-8 pb-8 pt-6">
+        {feedback && (
+          <div
+            className={cn(
+              'flex items-center gap-2 rounded-xl px-4 py-3 text-sm',
+              feedback.type === 'success'
+                ? 'bg-green-50 text-green-700'
+                : 'bg-red-50 text-red-600',
+            )}
+          >
+            {feedback.type === 'success' ? <Check className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+            {feedback.message}
+          </div>
+        )}
+
         <div className="space-y-1">
           <label className="text-sm font-semibold text-slate-700" htmlFor="name">
             Nombre Completo

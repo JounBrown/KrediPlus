@@ -3,10 +3,11 @@ import type { SubmitFormPayload } from '../types/loan-application'
 
 type UseSubmitFormOptions = {
   onSubmit?: (payload: SubmitFormPayload) => Promise<void> | void
+  resetOnSuccess?: boolean
 }
 
 export function useSubmitForm(options: UseSubmitFormOptions = {}) {
-  const { onSubmit } = options
+  const { onSubmit, resetOnSuccess = true } = options
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = useCallback(
@@ -30,11 +31,14 @@ export function useSubmitForm(options: UseSubmitFormOptions = {}) {
       try {
         setIsSubmitting(true)
         await onSubmit(payload)
+        if (resetOnSuccess) {
+          event.currentTarget.reset()
+        }
       } finally {
         setIsSubmitting(false)
       }
     },
-    [onSubmit],
+    [onSubmit, resetOnSuccess],
   )
 
   return {
