@@ -149,3 +149,21 @@ class SupabaseCreditSimulatorRepository(CreditSimulatorRepositoryPort):
             
         except Exception as e:
             raise Exception(f"Error setting active config: {str(e)}")
+    
+    async def delete(self, config_id: int) -> bool:
+        """Delete a simulator configuration by ID"""
+        try:
+            stmt = select(CreditSimulatorModel).where(CreditSimulatorModel.id == config_id)
+            result = await self.db.execute(stmt)
+            model = result.scalar_one_or_none()
+            
+            if not model:
+                return False  # Configuration not found
+            
+            await self.db.delete(model)
+            await self.db.flush()
+            
+            return True
+            
+        except Exception as e:
+            raise Exception(f"Error deleting simulator config: {str(e)}")

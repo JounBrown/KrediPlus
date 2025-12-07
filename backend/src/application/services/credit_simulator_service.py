@@ -252,3 +252,33 @@ class CreditSimulatorService:
             plazos_disponibles=activated_config.plazos_disponibles,
             is_active=activated_config.is_active
         )
+    
+    async def delete_config(self, config_id: int) -> dict:
+        """
+        Delete a simulator configuration
+        
+        Args:
+            config_id: ID of the configuration to delete
+            
+        Returns:
+            Dictionary with success message
+            
+        Raises:
+            ValueError: If configuration doesn't exist or is currently active
+        """
+        # Verificar que la configuración existe
+        config = await self._simulator_repository.get_by_id(config_id)
+        if not config:
+            raise ValueError(f"Configuración con ID {config_id} no encontrada")
+        
+        # No permitir borrar la configuración activa
+        if config.is_active:
+            raise ValueError("No se puede borrar la configuración activa. Active otra configuración primero.")
+        
+        # Eliminar la configuración
+        success = await self._simulator_repository.delete(config_id)
+        
+        if not success:
+            raise ValueError(f"Error al eliminar la configuración con ID {config_id}")
+        
+        return {"message": f"Configuración {config_id} eliminada exitosamente"}

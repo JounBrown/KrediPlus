@@ -35,3 +35,8 @@ class CreditSimulatorRepositoryPort(ABC):
     async def set_active_config(self, config_id: int) -> CreditSimulator:
         """Set a configuration as active (deactivates others)"""
         pass
+    
+    @abstractmethod
+    async def delete(self, config_id: int) -> bool:
+        """Delete a simulator configuration by ID"""
+        pass

@@ -129,3 +129,25 @@ async def activate_simulator_config(
         raise HTTPException(status_code=500, detail=f"Error activating simulator config: {str(e)}")
 
 
+@router.delete("/config/{config_id}")
+async def delete_simulator_config(
+    config_id: int,
+    service: CreditSimulatorService = Depends(get_simulator_service)
+):
+    """
+    Delete a simulator configuration
+    
+    - **config_id**: ID of the configuration to delete
+    
+    Restrictions:
+    - Cannot delete the currently active configuration
+    - Must activate another configuration first if you want to delete the active one
+    """
+    try:
+        return await service.delete_config(config_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting simulator config: {str(e)}")
+
+
