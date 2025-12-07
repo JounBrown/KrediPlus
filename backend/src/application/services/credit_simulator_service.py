@@ -133,13 +133,14 @@ class CreditSimulatorService:
             raise ValueError(f"Configuración con ID {config_id} no encontrada")
         
         # Crear configuración actualizada usando valores existentes como base
+        # Nota: is_active se mantiene igual, no se puede cambiar via PUT
         updated_config = CreditSimulator(
             id=config_id,
             tasa_interes_mensual=request.tasa_interes_mensual if request.tasa_interes_mensual is not None else existing_config.tasa_interes_mensual,
             monto_minimo=request.monto_minimo if request.monto_minimo is not None else existing_config.monto_minimo,
             monto_maximo=request.monto_maximo if request.monto_maximo is not None else existing_config.monto_maximo,
             plazos_disponibles=request.plazos_disponibles if request.plazos_disponibles is not None else existing_config.plazos_disponibles,
-            is_active=request.is_active if request.is_active is not None else existing_config.is_active,
+            is_active=existing_config.is_active,  # Siempre mantiene el valor actual
             created_at=existing_config.created_at
         )
         

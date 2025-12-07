@@ -71,7 +71,7 @@ class UpdateSimulatorConfigRequest(BaseModel):
     monto_minimo: float = Field(None, gt=0, description="Minimum loan amount")
     monto_maximo: float = Field(None, gt=0, description="Maximum loan amount")
     plazos_disponibles: List[int] = Field(None, description="Available terms in months")
-    is_active: bool = Field(None, description="Whether this configuration should be active")
+    # is_active removed - use POST /config/{id}/activate to change active status
     
     @validator('tasa_interes_mensual')
     def validate_tasa(cls, v):
