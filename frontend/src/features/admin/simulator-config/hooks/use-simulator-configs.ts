@@ -27,6 +27,23 @@ function parsePlazos(value: string) {
     .filter((item) => !Number.isNaN(item) && item > 0)
 }
 
+function normalizeRateInput(value: string) {
+  const sanitized = value.replace(',', '.')
+  const parsed = parseFloat(sanitized)
+  if (!Number.isFinite(parsed)) {
+    return 0
+  }
+  return parsed / 100
+}
+
+function formatRateForInput(value: number) {
+  if (!Number.isFinite(value)) {
+    return ''
+  }
+  const percentValue = value * 100
+  return Number(percentValue.toFixed(4)).toString()
+}
+
 export function useSimulatorConfigs(
   initialConfigs: SimulatorConfig[] = initialSimulatorConfigs,
   defaultSelectionId: number | null = defaultSimulatorConfig.id,
@@ -68,7 +85,7 @@ export function useSimulatorConfigs(
     if (mode === 'edit' && config) {
       setActiveSimConfig(config)
       setConfigForm({
-        tasaInteresMensual: config.tasaInteresMensual.toString(),
+        tasaInteresMensual: formatRateForInput(config.tasaInteresMensual),
         montoMinimo: config.montoMinimo.toString(),
         montoMaximo: config.montoMaximo.toString(),
         plazosDisponibles: config.plazosDisponibles.join(', '),
@@ -99,7 +116,7 @@ export function useSimulatorConfigs(
   }
 
   const handleSaveConfig = () => {
-    const parsedRate = parseFloat(configForm.tasaInteresMensual) || 0
+    const parsedRate = normalizeRateInput(configForm.tasaInteresMensual)
     const parsedMin = parseInt(configForm.montoMinimo, 10) || 0
     const parsedMax = parseInt(configForm.montoMaximo, 10) || 0
     const parsedPlazos = parsePlazos(configForm.plazosDisponibles)

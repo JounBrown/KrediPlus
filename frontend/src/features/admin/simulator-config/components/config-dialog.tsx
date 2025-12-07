@@ -54,6 +54,7 @@ export function SimulatorConfigDialog({
               min={0}
               step="0.01"
             />
+            <p className="text-xs text-slate-500">Ingresa el porcentaje; nosotros lo convertimos automáticamente.</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1">

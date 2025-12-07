@@ -76,7 +76,7 @@ export function SimulatorConfigTable({
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-[#0d2f62]">#{config.id}</span>
-                    {selectedConfigId === config.id && (
+                    {config.isActive && (
                       <Badge variant="outline" className="border-[#f26522] text-[#f26522]">
                         Activo
                       </Badge>
@@ -92,7 +92,7 @@ export function SimulatorConfigTable({
                       })
                     : 'Sin fecha'}
                 </TableCell>
-                <TableCell>{config.tasaInteresMensual.toFixed(2)}%</TableCell>
+                <TableCell>{((config.tasaInteresMensual ?? 0) * 100).toFixed(2)}%</TableCell>
                 <TableCell>{formatCurrency(config.montoMinimo)}</TableCell>
                 <TableCell>{formatCurrency(config.montoMaximo)}</TableCell>
                 <TableCell>{config.plazosDisponibles.map((plazo) => `${plazo}m`).join(', ')}</TableCell>
