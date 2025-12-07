@@ -17,6 +17,7 @@ export type CreateSimulatorConfigPayload = {
   monto_maximo: number
   plazos_disponibles: number[]
 }
+export type UpdateSimulatorConfigPayload = Partial<CreateSimulatorConfigPayload>
 
 function resolveResourceUrl() {
   const baseUrl = import.meta.env.VITE_API_URL
@@ -24,6 +25,10 @@ function resolveResourceUrl() {
     throw new Error('VITE_API_URL is not defined')
   }
   return `${baseUrl.replace(/\/$/, '')}${resourcePath}`
+}
+
+function resolveConfigDetailUrl(configId: number) {
+  return `${resolveResourceUrl()}/${configId}`
 }
 
 function mapSimulatorConfig(apiConfig: SimulatorConfigResponse): SimulatorConfig {
@@ -85,8 +90,29 @@ export async function createSimulatorConfig(
   return mapSimulatorConfig(data)
 }
 
+export async function updateSimulatorConfig(
+  configId: number,
+  payload: UpdateSimulatorConfigPayload,
+): Promise<SimulatorConfig> {
+  const response = await fetch(resolveConfigDetailUrl(configId), {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    return parseError(response, 'No fue posible actualizar la configuración del simulador')
+  }
+
+  const data: SimulatorConfigResponse = await response.json()
+  return mapSimulatorConfig(data)
+}
+
 export async function activateSimulatorConfig(configId: number): Promise<SimulatorConfig> {
-  const response = await fetch(`${resolveResourceUrl()}/${configId}/activate`, {
+  const response = await fetch(`${resolveConfigDetailUrl(configId)}/activate`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -99,4 +125,24 @@ export async function activateSimulatorConfig(configId: number): Promise<Simulat
 
   const data: SimulatorConfigResponse = await response.json()
   return mapSimulatorConfig(data)
+}
+
+type DeleteSimulatorConfigResponse = {
+  message?: string
+}
+
+export async function deleteSimulatorConfig(configId: number): Promise<string> {
+  const response = await fetch(resolveConfigDetailUrl(configId), {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    return parseError(response, 'No fue posible eliminar la configuración del simulador')
+  }
+
+  const data: DeleteSimulatorConfigResponse = await response.json().catch(() => ({}))
+  return data.message ?? 'Configuración eliminada correctamente'
 }

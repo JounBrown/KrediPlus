@@ -6,6 +6,8 @@ import {
 } from '@/data/simulator-config'
 import { useCreateSimulatorConfig } from '@/features/simulator-config/hooks/use-create-simulator-config'
 import { useActivateSimulatorConfig } from '@/features/simulator-config/hooks/use-activate-simulator-config'
+import { useUpdateSimulatorConfig } from '@/features/simulator-config/hooks/use-update-simulator-config'
+import { useDeleteSimulatorConfig } from '@/features/simulator-config/hooks/use-delete-simulator-config'
 
 export type SimulatorConfigForm = {
   tasaInteresMensual: string
@@ -57,6 +59,8 @@ export function useSimulatorConfigs(
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create')
   const [activeSimConfig, setActiveSimConfig] = useState<SimulatorConfig | null>(null)
   const [configForm, setConfigForm] = useState<SimulatorConfigForm>(emptyForm)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [configPendingDelete, setConfigPendingDelete] = useState<SimulatorConfig | null>(null)
 
   useEffect(() => {
     setSimConfigs(initialConfigs)
@@ -124,6 +128,36 @@ export function useSimulatorConfigs(
     },
   })
 
+  const updateSimulatorConfigMutation = useUpdateSimulatorConfig({
+    onSuccess: (config) => {
+      setSimConfigs((prev) =>
+        prev.map((existing) => (existing.id === config.id ? config : existing)),
+      )
+      setSelectedConfigId(config.id)
+      closeDialog()
+    },
+  })
+
+  const deleteSimulatorConfigMutation = useDeleteSimulatorConfig({
+    onSuccess: (_message, configId) => {
+      setSimConfigs((prev) => {
+        const updated = prev.filter((config) => config.id !== configId)
+        setSelectedConfigId((prevSelected) => {
+          if (prevSelected === configId) {
+            return updated[0]?.id ?? null
+          }
+          return prevSelected
+        })
+        return updated
+      })
+      setConfigPendingDelete(null)
+      setDeleteDialogOpen(false)
+    },
+    onError: () => {
+      setConfigPendingDelete((prev) => prev)
+    },
+  })
+
   const handleFormChange = (field: keyof SimulatorConfigForm, value: string) => {
     setConfigForm((prev) => ({ ...prev, [field]: value }))
   }
@@ -146,18 +180,15 @@ export function useSimulatorConfigs(
     }
 
     if (dialogMode === 'edit' && activeSimConfig) {
-      const updatedConfig: SimulatorConfig = {
-        ...activeSimConfig,
-        tasaInteresMensual: parsedRate,
-        montoMinimo: parsedMin,
-        montoMaximo: parsedMax,
-        plazosDisponibles: safePlazos,
-      }
-      setSimConfigs((prev) =>
-        prev.map((config) => (config.id === updatedConfig.id ? updatedConfig : config)),
-      )
-      setSelectedConfigId(updatedConfig.id)
-      closeDialog()
+      updateSimulatorConfigMutation.mutate({
+        configId: activeSimConfig.id,
+        payload: {
+          tasa_interes_mensual: parsedRate,
+          monto_minimo: parsedMin,
+          monto_maximo: parsedMax,
+          plazos_disponibles: safePlazos,
+        },
+      })
       return
     }
 
@@ -167,6 +198,23 @@ export function useSimulatorConfigs(
   const handleSelectConfig = (configId: number) => {
     setSelectedConfigId(configId)
     activateSimulatorConfigMutation.mutate(configId)
+  }
+
+  const requestDeleteConfig = (config: SimulatorConfig) => {
+    if (config.isActive) return
+    setConfigPendingDelete(config)
+    setDeleteDialogOpen(true)
+  }
+
+  const closeDeleteDialog = () => {
+    setDeleteDialogOpen(false)
+    setConfigPendingDelete(null)
+    deleteSimulatorConfigMutation.reset()
+  }
+
+  const confirmDeleteConfig = () => {
+    if (!configPendingDelete) return
+    deleteSimulatorConfigMutation.mutate(configPendingDelete.id)
   }
 
   return {
@@ -181,9 +229,18 @@ export function useSimulatorConfigs(
     handleFormChange,
     handleSaveConfig,
     handleSelectConfig,
+    requestDeleteConfig,
+    closeDeleteDialog,
+    confirmDeleteConfig,
     savingConfig: createSimulatorConfigMutation.isPending,
     saveError: createSimulatorConfigMutation.error,
+    updatingConfig: updateSimulatorConfigMutation.isPending,
+    updateError: updateSimulatorConfigMutation.error,
     activatingConfig: activateSimulatorConfigMutation.isPending,
     activateError: activateSimulatorConfigMutation.error,
+    deletingConfig: deleteSimulatorConfigMutation.isPending,
+    deleteError: deleteSimulatorConfigMutation.error,
+    deleteDialogOpen,
+    configPendingDelete,
   }
 }

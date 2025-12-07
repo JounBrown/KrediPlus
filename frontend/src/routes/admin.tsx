@@ -7,6 +7,7 @@ import { RequestsPanel } from '@/features/admin/requests/components/requests-pan
 import { ClientTable } from '@/features/admin/clients/components/client-table'
 import { SimulatorConfigTable } from '@/features/admin/simulator-config/components/config-table'
 import { SimulatorConfigDialog } from '@/features/admin/simulator-config/components/config-dialog'
+import { SimulatorConfigDeleteDialog } from '@/features/admin/simulator-config/components/delete-dialog'
 import { useSimulatorConfigs } from '@/features/admin/simulator-config/hooks/use-simulator-configs'
 import { useSimulatorConfigsQuery } from '@/features/simulator-config/hooks/use-simulator-configs-query'
 import { AppLayout } from '@/components/layout/app-layout'
@@ -33,11 +34,23 @@ function AdminPage() {
     handleFormChange,
     handleSaveConfig,
     handleSelectConfig,
+    requestDeleteConfig,
+    closeDeleteDialog,
+    confirmDeleteConfig,
     savingConfig,
     saveError,
+    updatingConfig,
+    updateError,
     activatingConfig,
     activateError,
+    deletingConfig,
+    deleteError,
+    deleteDialogOpen,
+    configPendingDelete,
   } = useSimulatorConfigs(remoteSimulatorConfigs, activeBackendConfigId)
+
+  const dialogSubmitting = dialogMode === 'create' ? savingConfig : updatingConfig
+  const dialogErrorMessage = dialogMode === 'create' ? saveError?.message : updateError?.message
 
   const currencyFormatter = useMemo(() => {
     return new Intl.NumberFormat('es-CO', {
@@ -79,9 +92,12 @@ function AdminPage() {
                 onCreate={() => openDialog('create')}
                 onEdit={(config) => openDialog('edit', config)}
                 onSelect={handleSelectConfig}
+                onDeleteRequest={requestDeleteConfig}
                 formatCurrency={(value) => currencyFormatter.format(value)}
                 activating={activatingConfig}
                 activateError={activateError?.message}
+                deletingConfig={deletingConfig}
+                deleteError={deleteError?.message}
               />
             )
           )}
@@ -97,8 +113,21 @@ function AdminPage() {
         }}
         onChange={handleFormChange}
         onSubmit={handleSaveConfig}
-        submitting={savingConfig}
-        errorMessage={saveError?.message}
+        submitting={dialogSubmitting}
+        errorMessage={dialogErrorMessage}
+      />
+
+      <SimulatorConfigDeleteDialog
+        open={deleteDialogOpen}
+        config={configPendingDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeDeleteDialog()
+          }
+        }}
+        onConfirm={confirmDeleteConfig}
+        deleting={deletingConfig}
+        errorMessage={deleteError?.message}
       />
     </>
   )
