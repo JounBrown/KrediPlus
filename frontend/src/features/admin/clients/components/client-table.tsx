@@ -27,6 +27,8 @@ import { MoreHorizontal, Search } from 'lucide-react'
 import { useClients } from '../hooks/use-clients'
 import { useClientsQuery } from '@/features/clients/hooks/use-clients-query'
 import { useEffect, useMemo, useState } from 'react'
+import type { ClientRecord } from '@/data/admin-clients'
+import { ClientDetailView } from './client-detail-view'
 
 export function ClientTable() {
   const {
@@ -57,6 +59,7 @@ export function ClientTable() {
     deletingClient,
     deleteError,
   } = useClients(serverClients ?? [])
+  const [detailClient, setDetailClient] = useState<ClientRecord | null>(null)
   const isCreateMode = dialogType === 'create'
   const isEditMode = dialogType === 'edit'
   const submitPending = isCreateMode ? creatingClient : isEditMode ? updatingClient : false
@@ -68,12 +71,34 @@ export function ClientTable() {
     setPage(1)
   }, [clientSearch])
 
+  useEffect(() => {
+    if (!detailClient || !serverClients) return
+    const updated = serverClients.find((client) => client.id === detailClient.id)
+    if (updated && updated !== detailClient) {
+      setDetailClient(updated)
+    }
+  }, [serverClients, detailClient])
+
   const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredClients.length / PAGE_SIZE)), [filteredClients.length])
   const currentPage = Math.min(page, totalPages)
   const startIndex = (currentPage - 1) * PAGE_SIZE
   const currentClients = filteredClients.slice(startIndex, startIndex + PAGE_SIZE)
 
-  return (
+  const handleViewDetails = (client: ClientRecord) => {
+    setDetailClient(client)
+  }
+
+  const handleBackToList = () => {
+    setDetailClient(null)
+  }
+
+  const content = detailClient ? (
+    <ClientDetailView
+      client={detailClient}
+      onBack={handleBackToList}
+      onEdit={(client) => openDialog('edit', client)}
+    />
+  ) : (
     <section className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -152,7 +177,7 @@ export function ClientTable() {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openDialog('view', client)}>
+                        <DropdownMenuItem onClick={() => handleViewDetails(client)}>
                           Ver detalles
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => openDialog('edit', client)}>
@@ -199,6 +224,12 @@ export function ClientTable() {
           </div>
         </div>
       )}
+    </section>
+  )
+
+  return (
+    <>
+      {content}
 
       <Dialog
         open={dialogOpen && Boolean(dialogType)}
@@ -207,50 +238,7 @@ export function ClientTable() {
         }}
       >
         <DialogContent>
-          {dialogType === 'view' && activeClient ? (
-            <>
-              <DialogHeader>
-                <DialogTitle>Detalles del cliente</DialogTitle>
-                <DialogDescription>
-                  Creado el {new Date(activeClient.createdAt).toLocaleString('es-CO')}
-                </DialogDescription>
-              </DialogHeader>
-              {loadingClientDetails && (
-                <p className="text-sm text-slate-500">Cargando información actualizada...</p>
-              )}
-              {clientDetailsError && (
-                <p className="text-sm text-red-600">{clientDetailsError.message}</p>
-              )}
-              <div className="space-y-3 text-sm text-slate-600">
-                <p>
-                  <span className="font-semibold">Nombre:</span> {activeClient.nombreCompleto}
-                </p>
-                <p>
-                  <span className="font-semibold">Cédula:</span> {activeClient.cedula}
-                </p>
-                <p>
-                  <span className="font-semibold">Email:</span> {activeClient.email}
-                </p>
-                <p>
-                  <span className="font-semibold">Teléfono:</span> {activeClient.telefono}
-                </p>
-                <p>
-                  <span className="font-semibold">Fecha de nacimiento:</span> {activeClient.fechaNacimiento}
-                </p>
-                <p>
-                  <span className="font-semibold">Dirección:</span> {activeClient.direccion}
-                </p>
-                <p>
-                  <span className="font-semibold">Info adicional:</span> {activeClient.infoAdicional}
-                </p>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={closeDialog}>
-                  Cerrar
-                </Button>
-              </DialogFooter>
-            </>
-          ) : dialogType === 'delete' && activeClient ? (
+          {dialogType === 'delete' && activeClient ? (
             <>
               <DialogHeader>
                 <DialogTitle>Eliminar cliente</DialogTitle>
@@ -285,6 +273,12 @@ export function ClientTable() {
                   Completa la información del cliente para continuar.
                 </DialogDescription>
               </DialogHeader>
+              {dialogType === 'edit' && loadingClientDetails && (
+                <p className="text-sm text-slate-500">Cargando información actualizada...</p>
+              )}
+              {dialogType === 'edit' && clientDetailsError && (
+                <p className="text-sm text-red-600">{clientDetailsError.message}</p>
+              )}
               <div className="space-y-4">
                 <Input
                   value={formState.nombreCompleto}
@@ -345,6 +339,6 @@ export function ClientTable() {
           ) : null}
         </DialogContent>
       </Dialog>
-    </section>
+    </>
   )
 }

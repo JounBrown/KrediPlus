@@ -20,6 +20,7 @@ export function useUpdateClient(options: UseUpdateClientOptions = {}) {
     mutationFn: ({ clientId, payload }) => updateClient(clientId, payload),
     onSuccess: (client) => {
       queryClient.invalidateQueries({ queryKey: clientsQueryKey })
+      queryClient.invalidateQueries({ queryKey: [...clientsQueryKey, client.id] })
       options.onSuccess?.(client)
     },
     onError: (error) => {

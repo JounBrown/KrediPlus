@@ -5,7 +5,7 @@ import { useUpdateClient } from '@/features/clients/hooks/use-update-client'
 import { useClientDetails } from '@/features/clients/hooks/use-client-details'
 import { useDeleteClient } from '@/features/clients/hooks/use-delete-client'
 
-type ClientDialogType = 'create' | 'edit' | 'delete' | 'view' | null
+type ClientDialogType = 'create' | 'edit' | 'delete' | null
 
 type ClientFormState = Omit<ClientRecord, 'id' | 'createdAt'>
 
