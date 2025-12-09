@@ -2,17 +2,18 @@ from datetime import datetime, date
 from typing import Optional
 from dataclasses import dataclass
 from enum import Enum
+from decimal import Decimal
 
 
 class CreditStatus(Enum):
     """Credit status enumeration"""
-    PENDIENTE = "pendiente"
-    APROBADO = "aprobado"
-    DESEMBOLSADO = "desembolsado"
-    ACTIVO = "activo"
-    PAGADO = "pagado"
-    VENCIDO = "vencido"
-    CANCELADO = "cancelado"
+    EN_ESTUDIO = "EN_ESTUDIO"
+    APROBADO = "APROBADO"
+    RECHAZADO = "RECHAZADO"
+    DESEMBOLSADO = "DESEMBOLSADO"
+    AL_DIA = "AL_DIA"
+    EN_MORA = "EN_MORA"
+    PAGADO = "PAGADO"
 
 
 @dataclass
@@ -20,10 +21,10 @@ class Credit:
     """Credit aggregate - Represents approved credits"""
     
     id: Optional[int]
-    monto_aprobado: float
+    monto_aprobado: Decimal
     plazo_meses: int
-    tasa_interes: float
-    estado: str = CreditStatus.PENDIENTE.value
+    tasa_interes: Decimal
+    estado: str = CreditStatus.EN_ESTUDIO.value
     fecha_desembolso: Optional[date] = None
     client_id: int = None
     created_at: Optional[datetime] = None
@@ -32,28 +33,28 @@ class Credit:
         if self.created_at is None:
             self.created_at = datetime.now()
     
-    def calculate_monthly_payment(self) -> float:
+    def calculate_monthly_payment(self) -> Decimal:
         """Calculate monthly payment amount"""
         if self.tasa_interes <= 0:
             return self.monto_aprobado / self.plazo_meses
         
-        monthly_rate = self.tasa_interes / 100
+        monthly_rate = self.tasa_interes / Decimal('100')
         payment = (self.monto_aprobado * monthly_rate * (1 + monthly_rate) ** self.plazo_meses) / \
                  ((1 + monthly_rate) ** self.plazo_meses - 1)
-        return round(payment, 2)
+        return payment.quantize(Decimal('0.01'))
     
-    def calculate_total_payment(self) -> float:
+    def calculate_total_payment(self) -> Decimal:
         """Calculate total amount to be paid"""
         monthly_payment = self.calculate_monthly_payment()
-        return round(monthly_payment * self.plazo_meses, 2)
+        return (monthly_payment * self.plazo_meses).quantize(Decimal('0.01'))
     
-    def calculate_total_interest(self) -> float:
+    def calculate_total_interest(self) -> Decimal:
         """Calculate total interest to be paid"""
-        return round(self.calculate_total_payment() - self.monto_aprobado, 2)
+        return (self.calculate_total_payment() - self.monto_aprobado).quantize(Decimal('0.01'))
     
-    def approve_credit(self, monto: float, plazo: int, tasa: float) -> bool:
+    def approve_credit(self, monto: Decimal, plazo: int, tasa: Decimal) -> bool:
         """Approve credit with specified terms"""
-        if self.estado == CreditStatus.PENDIENTE.value and monto > 0 and plazo > 0 and tasa >= 0:
+        if self.estado == CreditStatus.EN_ESTUDIO.value and monto > 0 and plazo > 0 and tasa >= 0:
             self.monto_aprobado = monto
             self.plazo_meses = plazo
             self.tasa_interes = tasa
@@ -69,37 +70,37 @@ class Credit:
             return True
         return False
     
-    def activate_credit(self) -> bool:
-        """Activate the disbursed credit"""
+    def mark_as_current(self) -> bool:
+        """Mark credit as current (al día)"""
         if self.estado == CreditStatus.DESEMBOLSADO.value:
-            self.estado = CreditStatus.ACTIVO.value
+            self.estado = CreditStatus.AL_DIA.value
             return True
         return False
     
     def mark_as_paid(self) -> bool:
         """Mark credit as fully paid"""
-        if self.estado == CreditStatus.ACTIVO.value:
+        if self.estado in [CreditStatus.AL_DIA.value, CreditStatus.EN_MORA.value]:
             self.estado = CreditStatus.PAGADO.value
             return True
         return False
     
     def mark_as_overdue(self) -> bool:
-        """Mark credit as overdue"""
-        if self.estado == CreditStatus.ACTIVO.value:
-            self.estado = CreditStatus.VENCIDO.value
+        """Mark credit as overdue (en mora)"""
+        if self.estado == CreditStatus.AL_DIA.value:
+            self.estado = CreditStatus.EN_MORA.value
             return True
         return False
     
-    def cancel_credit(self) -> bool:
-        """Cancel the credit"""
-        if self.estado in [CreditStatus.PENDIENTE.value, CreditStatus.APROBADO.value]:
-            self.estado = CreditStatus.CANCELADO.value
+    def reject_credit(self) -> bool:
+        """Reject the credit"""
+        if self.estado == CreditStatus.EN_ESTUDIO.value:
+            self.estado = CreditStatus.RECHAZADO.value
             return True
         return False
     
     def is_active(self) -> bool:
         """Check if credit is currently active"""
-        return self.estado in [CreditStatus.ACTIVO.value, CreditStatus.DESEMBOLSADO.value]
+        return self.estado in [CreditStatus.AL_DIA.value, CreditStatus.EN_MORA.value, CreditStatus.DESEMBOLSADO.value]
     
     def can_be_disbursed(self) -> bool:
         """Check if credit can be disbursed"""

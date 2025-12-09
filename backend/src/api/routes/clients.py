@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.services.client_service import ClientService
@@ -10,6 +10,7 @@ from src.application.dtos.client_dtos import (
     ClientListResponse,
     SearchClientsRequest
 )
+from src.application.dtos.credit_dtos import CreateCreditForClientRequest, CreditResponse, UpdateCreditRequest
 from src.infrastructure.adapters.database.connection import get_db_session
 from src.infrastructure.adapters.database.client_repository import SupabaseClientRepository
 
@@ -243,5 +244,128 @@ async def delete_client_document(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{client_id}/credits", response_model=CreditResponse)
+async def create_credit_for_client(
+    client_id: int,
+    credit_request: CreateCreditForClientRequest,
+    db: AsyncSession = Depends(get_db_session)
+    # TODO: Add authentication dependency here
+):
+    """
+    Create a new credit for a specific client
+    
+    - **client_id:** ID of the client (from URL path)
+    - **monto_aprobado**: Approved amount (Decimal: 100,000 - 100,000,000)
+    - **plazo_meses**: Term in months (1-120)
+    - **tasa_interes**: Interest rate percentage (Decimal: 0-100)
+    - **fecha_desembolso**: Optional disbursement date
+    
+    **Validation:**
+    - Verifies that the client exists before creating the credit
+    - Default status: EN_ESTUDIO
+    
+    **RESTful Design:**
+    - This endpoint follows the pattern: POST /clients/{client_id}/credits
+    - The client_id is taken from the URL path, not the request body
+    """
+    try:
+        from src.application.services.credit_service import CreditService
+        from src.application.dtos.credit_dtos import CreateCreditRequest
+        from src.infrastructure.adapters.database.credit_repository import SupabaseCreditRepository
+        
+        # First verify that client exists
+        client_service = get_client_service(db)
+        client = await client_service.get_client_by_id(client_id)
+        if not client:
+            raise HTTPException(status_code=404, detail="Client not found")
+        
+        # Create credit service
+        credit_repository = SupabaseCreditRepository(db)
+        credit_service = CreditService(credit_repository)
+        
+        # Convert to full CreateCreditRequest (adding client_id)
+        full_request = CreateCreditRequest(
+            client_id=client_id,
+            monto_aprobado=credit_request.monto_aprobado,
+            plazo_meses=credit_request.plazo_meses,
+            tasa_interes=credit_request.tasa_interes,
+            fecha_desembolso=credit_request.fecha_desembolso
+        )
+        
+        # Create the credit
+        return await credit_service.create_credit(full_request)
+        
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating credit for client: {str(e)}")
+
+
+@router.put("/{client_id}/credits/{credit_id}", response_model=CreditResponse)
+async def update_client_credit(
+    client_id: int,
+    credit_id: int,
+    credit_request: UpdateCreditRequest,
+    db: AsyncSession = Depends(get_db_session)
+    # TODO: Add authentication dependency here
+):
+    """
+    Update a credit that belongs to a specific client
+    
+    - **client_id:** ID of the client (from URL path)
+    - **credit_id:** ID of the credit to update (from URL path)
+    - **monto_aprobado**: Approved amount (Decimal: 100,000 - 100,000,000)
+    - **plazo_meses**: Term in months (1-120)
+    - **tasa_interes**: Interest rate percentage (Decimal: 0-100)
+    - **estado**: Credit status (EN_ESTUDIO, APROBADO, RECHAZADO, etc.)
+    - **fecha_desembolso**: Disbursement date
+    
+    **Validation:**
+    - Verifies that the client exists
+    - Verifies that the credit exists and belongs to the specified client
+    - All fields are optional (partial updates allowed)
+    
+    **RESTful Design:**
+    - This endpoint follows the pattern: PUT /clients/{client_id}/credits/{credit_id}
+    - Both client_id and credit_id are taken from the URL path
+    """
+    try:
+        from src.application.services.credit_service import CreditService
+        from src.infrastructure.adapters.database.credit_repository import SupabaseCreditRepository
+        
+        # First verify that client exists
+        client_service = get_client_service(db)
+        client = await client_service.get_client_by_id(client_id)
+        if not client:
+            raise HTTPException(status_code=404, detail="Client not found")
+        
+        # Create credit service
+        credit_repository = SupabaseCreditRepository(db)
+        credit_service = CreditService(credit_repository)
+        
+        # Verify that credit exists and belongs to the client
+        existing_credit = await credit_service.get_credit_by_id(credit_id)
+        if not existing_credit:
+            raise HTTPException(status_code=404, detail="Credit not found")
+        
+        if existing_credit.client_id != client_id:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Credit {credit_id} does not belong to client {client_id}"
+            )
+        
+        # Update the credit
+        return await credit_service.update_credit(credit_id, credit_request)
+        
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating credit for client: {str(e)}")
 
 

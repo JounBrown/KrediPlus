@@ -3,9 +3,9 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
-from src.domain.entities.credit import Credit
+from src.domain.entities.credit import Credit, CreditStatus
 from src.domain.ports.credit_repository import CreditRepositoryPort
-from .models import CreditModel
+from .models import CreditModel, EstadoCreditoEnum
 
 
 class SupabaseCreditRepository(CreditRepositoryPort):
@@ -16,26 +16,32 @@ class SupabaseCreditRepository(CreditRepositoryPort):
     
     def _model_to_entity(self, model: CreditModel) -> Credit:
         """Convert database model to domain entity"""
+        # Convert database enum to string
+        estado_str = model.estado.value if isinstance(model.estado, EstadoCreditoEnum) else model.estado
+        
         return Credit(
             id=model.id,
             client_id=model.client_id,
             monto_aprobado=model.monto_aprobado,
             plazo_meses=model.plazo_meses,
             tasa_interes=model.tasa_interes,
-            estado=model.estado,
+            estado=estado_str,
             fecha_desembolso=model.fecha_desembolso,
             created_at=model.created_at
         )
     
     def _entity_to_model(self, entity: Credit) -> CreditModel:
         """Convert domain entity to database model"""
+        # Convert string to database enum
+        estado_enum = EstadoCreditoEnum(entity.estado)
+        
         return CreditModel(
             id=entity.id,
             client_id=entity.client_id,
             monto_aprobado=entity.monto_aprobado,
             plazo_meses=entity.plazo_meses,
             tasa_interes=entity.tasa_interes,
-            estado=entity.estado,
+            estado=estado_enum,
             fecha_desembolso=entity.fecha_desembolso,
             created_at=entity.created_at or datetime.now()
         )
@@ -113,7 +119,7 @@ class SupabaseCreditRepository(CreditRepositoryPort):
             model.monto_aprobado = credit.monto_aprobado
             model.plazo_meses = credit.plazo_meses
             model.tasa_interes = credit.tasa_interes
-            model.estado = credit.estado
+            model.estado = EstadoCreditoEnum(credit.estado)
             model.fecha_desembolso = credit.fecha_desembolso
             
             await self.db.flush()
@@ -170,7 +176,7 @@ class SupabaseCreditRepository(CreditRepositoryPort):
     async def get_active_credits(self, skip: int = 0, limit: int = 100) -> List[Credit]:
         """Get active credits"""
         try:
-            active_statuses = ["aprobado", "desembolsado"]
+            active_statuses = [EstadoCreditoEnum.AL_DIA, EstadoCreditoEnum.DESEMBOLSADO]
             stmt = select(CreditModel).where(
                 CreditModel.estado.in_(active_statuses)
             ).order_by(CreditModel.created_at.desc()).offset(skip).limit(limit)
@@ -187,7 +193,7 @@ class SupabaseCreditRepository(CreditRepositoryPort):
         """Get overdue credits"""
         try:
             stmt = select(CreditModel).where(
-                CreditModel.estado == "vencido"
+                CreditModel.estado == EstadoCreditoEnum.EN_MORA
             ).order_by(CreditModel.created_at.desc()).offset(skip).limit(limit)
             
             result = await self.db.execute(stmt)
@@ -202,7 +208,7 @@ class SupabaseCreditRepository(CreditRepositoryPort):
         """Get approved credits ready for disbursement"""
         try:
             stmt = select(CreditModel).where(
-                CreditModel.estado == "aprobado"
+                CreditModel.estado == EstadoCreditoEnum.APROBADO
             ).order_by(CreditModel.created_at.desc()).offset(skip).limit(limit)
             
             result = await self.db.execute(stmt)
@@ -239,7 +245,7 @@ class SupabaseCreditRepository(CreditRepositoryPort):
             if not model:
                 return False
             
-            model.estado = new_status
+            model.estado = EstadoCreditoEnum(new_status)
             await self.db.flush()
             
             return True
@@ -283,7 +289,7 @@ class SupabaseCreditRepository(CreditRepositoryPort):
         """Calculate total amount disbursed"""
         try:
             stmt = select(func.sum(CreditModel.monto_aprobado)).where(
-                CreditModel.estado.in_(["desembolsado", "pagado"])
+                CreditModel.estado.in_([EstadoCreditoEnum.DESEMBOLSADO, EstadoCreditoEnum.PAGADO])
             )
             result = await self.db.execute(stmt)
             return float(result.scalar() or 0)
@@ -295,7 +301,7 @@ class SupabaseCreditRepository(CreditRepositoryPort):
         """Calculate total outstanding amount"""
         try:
             stmt = select(func.sum(CreditModel.monto_aprobado)).where(
-                CreditModel.estado == "desembolsado"
+                CreditModel.estado == EstadoCreditoEnum.AL_DIA
             )
             result = await self.db.execute(stmt)
             return float(result.scalar() or 0)

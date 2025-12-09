@@ -1,9 +1,33 @@
 import enum
-from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, ForeignKey, Boolean, Enum
+from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, ForeignKey, Boolean, Enum, Numeric
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .connection import Base
+
+
+class DocumentTypeEnum(enum.Enum):
+    """Enum for document types"""
+    CEDULA_FRENTE = "CEDULA_FRENTE"
+    CEDULA_REVERSO = "CEDULA_REVERSO"
+    COMPROBANTE_INGRESOS = "COMPROBANTE_INGRESOS"
+    CERTIFICADO_LABORAL = "CERTIFICADO_LABORAL"
+    SOLICITUD_CREDITO_FIRMADA = "SOLICITUD_CREDITO_FIRMADA"
+    PAGARE_FIRMADO = "PAGARE_FIRMADO"
+    COMPROBANTE_DOMICILIO = "COMPROBANTE_DOMICILIO"
+    EXTRACTO_BANCARIO = "EXTRACTO_BANCARIO"
+    OTRO = "OTRO"
+
+
+class EstadoCreditoEnum(enum.Enum):
+    """Enum for credit status"""
+    EN_ESTUDIO = "EN_ESTUDIO"
+    APROBADO = "APROBADO"
+    RECHAZADO = "RECHAZADO"
+    DESEMBOLSADO = "DESEMBOLSADO"
+    AL_DIA = "AL_DIA"
+    EN_MORA = "EN_MORA"
+    PAGADO = "PAGADO"
 
 
 class ApplicationModel(Base):
@@ -44,10 +68,10 @@ class CreditModel(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    monto_aprobado = Column(Float, nullable=False)
+    monto_aprobado = Column(Numeric(precision=15, scale=2), nullable=False)
     plazo_meses = Column(Integer, nullable=False)
-    tasa_interes = Column(Float, nullable=False)
-    estado = Column(Text, nullable=False, default="pendiente")
+    tasa_interes = Column(Numeric(precision=5, scale=4), nullable=False)
+    estado = Column(Enum(EstadoCreditoEnum, name="estado_credito_enum"), nullable=False, default=EstadoCreditoEnum.EN_ESTUDIO)
     fecha_desembolso = Column(Date, nullable=True)
     client_id = Column(Integer, ForeignKey("Client.id"), nullable=False)
     
@@ -77,19 +101,6 @@ class CreditSimulatorModel(Base):
     monto_maximo = Column(Float, nullable=False)
     plazos_disponibles = Column(JSON, nullable=False)
     is_active = Column(Boolean, nullable=False, default=False)
-
-
-class DocumentTypeEnum(enum.Enum):
-    """Enum for document types"""
-    CEDULA_FRENTE = "CEDULA_FRENTE"
-    CEDULA_REVERSO = "CEDULA_REVERSO"
-    COMPROBANTE_INGRESOS = "COMPROBANTE_INGRESOS"
-    CERTIFICADO_LABORAL = "CERTIFICADO_LABORAL"
-    SOLICITUD_CREDITO_FIRMADA = "SOLICITUD_CREDITO_FIRMADA"
-    PAGARE_FIRMADO = "PAGARE_FIRMADO"
-    COMPROBANTE_DOMICILIO = "COMPROBANTE_DOMICILIO"
-    EXTRACTO_BANCARIO = "EXTRACTO_BANCARIO"
-    OTRO = "OTRO"
 
 
 class ClientDocumentModel(Base):

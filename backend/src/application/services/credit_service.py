@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
-from src.domain.entities.credit import Credit
+from src.domain.entities.credit import Credit, CreditStatus
 from src.domain.ports.credit_repository import CreditRepositoryPort
 from src.application.dtos.credit_dtos import (
     CreateCreditRequest,
@@ -25,7 +25,7 @@ class CreditService:
             monto_aprobado=request.monto_aprobado,
             plazo_meses=request.plazo_meses,
             tasa_interes=request.tasa_interes,
-            estado="pendiente",  # Default status
+            estado=CreditStatus.EN_ESTUDIO.value,  # Default status
             fecha_desembolso=request.fecha_desembolso,
             created_at=datetime.now()
         )
@@ -81,7 +81,7 @@ class CreditService:
         if request.tasa_interes is not None:
             credit.tasa_interes = request.tasa_interes
         if request.estado is not None:
-            credit.estado = request.estado
+            credit.estado = request.estado.value if hasattr(request.estado, 'value') else request.estado
         if request.fecha_desembolso is not None:
             credit.fecha_desembolso = request.fecha_desembolso
         

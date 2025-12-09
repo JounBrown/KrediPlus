@@ -29,10 +29,12 @@ async def create_credit(
     Create a new credit
     
     - **client_id**: ID of the client
-    - **monto_aprobado**: Approved amount (100,000 - 100,000,000)
+    - **monto_aprobado**: Approved amount (Decimal: 100,000 - 100,000,000)
     - **plazo_meses**: Term in months (1-120)
-    - **tasa_interes**: Interest rate percentage (0-100)
+    - **tasa_interes**: Interest rate percentage (Decimal: 0-100)
     - **fecha_desembolso**: Optional disbursement date
+    
+    **Default status**: EN_ESTUDIO
     """
     try:
         return await service.create_credit(request)
@@ -122,10 +124,10 @@ async def update_credit(
     """
     Update credit information
     
-    - **monto_aprobado**: Approved amount
+    - **monto_aprobado**: Approved amount (Decimal)
     - **plazo_meses**: Term in months
-    - **tasa_interes**: Interest rate percentage
-    - **estado**: Credit status (pendiente, aprobado, desembolsado, pagado, vencido, cancelado)
+    - **tasa_interes**: Interest rate percentage (Decimal)
+    - **estado**: Credit status (EN_ESTUDIO, APROBADO, RECHAZADO, DESEMBOLSADO, AL_DIA, EN_MORA, PAGADO)
     - **fecha_desembolso**: Disbursement date
     """
     try:
