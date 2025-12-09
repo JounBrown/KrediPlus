@@ -1,17 +1,38 @@
 import { useState, type ChangeEvent } from 'react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { MoreHorizontal } from 'lucide-react'
 import type { ClientRecord } from '@/data/admin-clients'
 import type {
   ClientDocumentRecord,
   DocumentType,
   UploadClientDocumentResponse,
 } from '@/features/clients/api/documents'
+import type { ClientCreditRecord } from '@/features/clients/api/credits'
 import { useClientDetails } from '@/features/clients/hooks/use-client-details'
+import { useClientCredits } from '@/features/clients/hooks/use-client-credits'
 import { useClientDocuments } from '@/features/clients/hooks/use-client-documents'
+import { useCreateClientCredit } from '@/features/clients/hooks/use-create-client-credit'
 import { useDeleteClientDocument } from '@/features/clients/hooks/use-delete-client-document'
+import { useUpdateClientCredit } from '@/features/clients/hooks/use-update-client-credit'
 import { useUploadClientDocument } from '@/features/clients/hooks/use-upload-client-document'
 
 const detailTabs = [
@@ -21,6 +42,12 @@ const detailTabs = [
 ] as const
 
 type DetailTabId = (typeof detailTabs)[number]['id']
+
+const currencyFormatter = new Intl.NumberFormat('es-CO', {
+  style: 'currency',
+  currency: 'COP',
+  maximumFractionDigits: 0,
+})
 
 const documentTypeOptions: { value: DocumentType; label: string; helper: string }[] = [
   { value: 'CEDULA_FRENTE', label: 'Cédula - Frente', helper: 'Foto frontal del documento de identidad.' },
@@ -33,6 +60,16 @@ const documentTypeOptions: { value: DocumentType; label: string; helper: string 
   { value: 'EXTRACTO_BANCARIO', label: 'Extracto bancario', helper: 'Últimos movimientos bancarios.' },
   { value: 'OTRO', label: 'Otro documento', helper: 'Cualquier soporte adicional relevante.' },
 ]
+
+const creditStatusOptions = [
+  { value: 'EN_ESTUDIO', label: 'En estudio' },
+  { value: 'APROBADO', label: 'Aprobado' },
+  { value: 'RECHAZADO', label: 'Rechazado' },
+  { value: 'DESEMBOLSADO', label: 'Desembolsado' },
+  { value: 'AL_DIA', label: 'Al día' },
+  { value: 'EN_MORA', label: 'En mora' },
+  { value: 'PAGADO', label: 'Pagado' },
+] as const
 
 type ClientDetailViewProps = {
   client: ClientRecord
@@ -48,8 +85,28 @@ export function ClientDetailView({ client, onBack, onEdit }: ClientDetailViewPro
   const [fileInputKey, setFileInputKey] = useState(0)
   const [formError, setFormError] = useState<string | null>(null)
   const [lastUploadResult, setLastUploadResult] = useState<UploadClientDocumentResponse | null>(null)
+  const [creditAmount, setCreditAmount] = useState('')
+  const [creditTerm, setCreditTerm] = useState('')
+  const [creditRate, setCreditRate] = useState('')
+  const [creditDisbursementDate, setCreditDisbursementDate] = useState('')
+  const [creditStatus, setCreditStatus] = useState<(typeof creditStatusOptions)[number]['value']>('EN_ESTUDIO')
+  const [creditFormError, setCreditFormError] = useState<string | null>(null)
+  const [creditSuccessMessage, setCreditSuccessMessage] = useState<string | null>(null)
+  const [creditDialogOpen, setCreditDialogOpen] = useState(false)
+  const [creditDialogMode, setCreditDialogMode] = useState<'create' | 'edit'>('create')
+  const [creditEditingId, setCreditEditingId] = useState<number | null>(null)
   const [documentDeletingId, setDocumentDeletingId] = useState<number | null>(null)
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string | null>(null)
+
+  const resetCreditForm = () => {
+    setCreditAmount('')
+    setCreditTerm('')
+    setCreditRate('')
+    setCreditDisbursementDate('')
+    setCreditFormError(null)
+    setCreditStatus('EN_ESTUDIO')
+    setCreditEditingId(null)
+  }
   const {
     data: remoteClient,
     isFetching,
@@ -61,6 +118,12 @@ export function ClientDetailView({ client, onBack, onEdit }: ClientDetailViewPro
     isFetching: loadingDocuments,
     error: clientDocumentsError,
   } = useClientDocuments(resolvedClient.id, { enabled: activeTab === 'documents' })
+  const {
+    data: clientCredits,
+    isFetching: fetchingCredits,
+    isLoading: loadingCredits,
+    error: clientCreditsError,
+  } = useClientCredits(resolvedClient.id, { enabled: activeTab === 'credits' })
   const uploadDocumentMutation = useUploadClientDocument({
     onSuccess: (result) => {
       setLastUploadResult(result)
@@ -71,6 +134,26 @@ export function ClientDetailView({ client, onBack, onEdit }: ClientDetailViewPro
     },
     onError: () => {
       setLastUploadResult(null)
+    },
+  })
+  const createCreditMutation = useCreateClientCredit({
+    onSuccess: (credit) => {
+      setCreditSuccessMessage(`Crédito #${credit.id} creado correctamente.`)
+      resetCreditForm()
+      setCreditDialogOpen(false)
+    },
+    onError: () => {
+      setCreditSuccessMessage(null)
+    },
+  })
+  const updateCreditMutation = useUpdateClientCredit({
+    onSuccess: (credit) => {
+      setCreditSuccessMessage(`Crédito #${credit.id} actualizado correctamente.`)
+      resetCreditForm()
+      setCreditDialogOpen(false)
+    },
+    onError: () => {
+      setCreditSuccessMessage(null)
     },
   })
   const deleteDocumentMutation = useDeleteClientDocument({
@@ -137,8 +220,113 @@ export function ClientDetailView({ client, onBack, onEdit }: ClientDetailViewPro
     }
   }
 
+  const handleCreditDialogOpenChange = (open: boolean) => {
+    setCreditDialogOpen(open)
+    if (!open) {
+      resetCreditForm()
+      setCreditFormError(null)
+      createCreditMutation.reset()
+      updateCreditMutation.reset()
+      setCreditDialogMode('create')
+    }
+  }
+
+  const openCreateCreditDialog = () => {
+    resetCreditForm()
+    setCreditDialogMode('create')
+    setCreditSuccessMessage(null)
+    setCreditDialogOpen(true)
+  }
+
+  const handleEditCredit = (credit: ClientCreditRecord) => {
+    setCreditDialogMode('edit')
+    setCreditEditingId(credit.id)
+    setCreditAmount(String(credit.montoAprobado))
+    setCreditTerm(String(credit.plazoMeses))
+    setCreditRate(String(credit.tasaInteres))
+    setCreditStatus(credit.estado as (typeof creditStatusOptions)[number]['value'])
+    setCreditDisbursementDate(credit.fechaDesembolso ?? '')
+    setCreditFormError(null)
+    setCreditSuccessMessage(null)
+    setCreditDialogOpen(true)
+  }
+
+  const handleSubmitCredit = async () => {
+    const parsedAmount = Number(creditAmount)
+    if (!creditAmount || Number.isNaN(parsedAmount) || parsedAmount < 100000 || parsedAmount > 100000000) {
+      setCreditFormError('El monto aprobado debe estar entre 100.000 y 100.000.000.')
+      return
+    }
+
+    const parsedTerm = Number(creditTerm)
+    if (!creditTerm || Number.isNaN(parsedTerm) || parsedTerm < 1 || parsedTerm > 120) {
+      setCreditFormError('El plazo debe estar entre 1 y 120 meses.')
+      return
+    }
+
+    const parsedRate = Number(creditRate)
+    if (!creditRate || Number.isNaN(parsedRate) || parsedRate < 0 || parsedRate > 100) {
+      setCreditFormError('La tasa de interés debe estar entre 0% y 100%.')
+      return
+    }
+
+    setCreditFormError(null)
+    setCreditSuccessMessage(null)
+
+    try {
+      const basePayload = {
+        monto_aprobado: parsedAmount,
+        plazo_meses: parsedTerm,
+        tasa_interes: parsedRate,
+        estado: creditStatus,
+      }
+      const createPayload = creditDisbursementDate
+        ? { ...basePayload, fecha_desembolso: creditDisbursementDate }
+        : basePayload
+      const updatePayload = { ...basePayload, fecha_desembolso: creditDisbursementDate || null }
+
+      if (creditDialogMode === 'edit' && creditEditingId) {
+        await updateCreditMutation.mutateAsync({
+          clientId: resolvedClient.id,
+          creditId: creditEditingId,
+          payload: updatePayload,
+        })
+      } else {
+        await createCreditMutation.mutateAsync({
+          clientId: resolvedClient.id,
+          payload: createPayload,
+        })
+      }
+    } catch {
+      /* El estado de error se maneja dentro de React Query */
+    }
+  }
+
+  const isSavingCredit = createCreditMutation.isPending || updateCreditMutation.isPending
+
   const resolveDocumentTypeLabel = (type: DocumentType) =>
     documentTypeOptions.find((option) => option.value === type)?.label ?? type
+
+  const formatCurrency = (value: number) => currencyFormatter.format(value)
+
+  const formatDateTime = (value: string) =>
+    new Date(value).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })
+
+  const formatCreditStatus = (status: string) =>
+    status
+      .toLowerCase()
+      .split('_')
+      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(' ')
+
+  const statusBadgeClasses: Record<string, string> = {
+    EN_ESTUDIO: 'bg-amber-50 text-amber-700 border border-amber-100',
+    APROBADO: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+    RECHAZADO: 'bg-red-50 text-red-700 border border-red-100',
+  }
+
+  const getCreditStatusBadgeClass = (status: string) =>
+    statusBadgeClasses[status] ?? 'bg-slate-100 text-slate-600 border border-slate-200'
 
   const infoItems = [
     { label: 'Nombre Completo', value: resolvedClient.nombreCompleto },
@@ -162,7 +350,8 @@ export function ClientDetailView({ client, onBack, onEdit }: ClientDetailViewPro
   ]
 
   return (
-    <section className="space-y-6">
+    <>
+      <section className="space-y-6">
       <button
         type="button"
         onClick={onBack}
@@ -406,6 +595,95 @@ export function ClientDetailView({ client, onBack, onEdit }: ClientDetailViewPro
                 </div>
               </div>
             </div>
+          ) : activeTab === 'credits' ? (
+            <div className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="text-lg font-semibold text-[#f26522]">Créditos del cliente</p>
+                  <p className="text-sm text-slate-500">
+                    Consulta el historial de créditos aprobados y registra nuevos desembolsos cuando sea necesario.
+                  </p>
+                </div>
+                <Button className="bg-[#f26522] text-white hover:bg-[#d85314]" onClick={openCreateCreditDialog}>
+                  Crear crédito
+                </Button>
+              </div>
+
+              <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white">
+                {creditSuccessMessage && (
+                  <div className="border-b border-emerald-100 bg-emerald-50 px-6 py-3 text-sm text-emerald-800">
+                    {creditSuccessMessage}
+                  </div>
+                )}
+                {loadingCredits && !clientCredits ? (
+                  <div className="py-10 text-center text-sm text-slate-500">Cargando créditos...</div>
+                ) : clientCreditsError ? (
+                  <div className="py-10 text-center text-sm text-red-600">{clientCreditsError.message}</div>
+                ) : clientCredits && clientCredits.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    {fetchingCredits && (
+                      <p className="px-6 py-2 text-xs text-slate-500">Actualizando información...</p>
+                    )}
+                    <Table>
+                      <TableHeader className="bg-slate-50">
+                        <TableRow>
+                          <TableHead className="text-xs font-bold uppercase text-slate-500">Monto aprobado</TableHead>
+                          <TableHead className="text-xs font-bold uppercase text-slate-500">Plazo</TableHead>
+                          <TableHead className="text-xs font-bold uppercase text-slate-500">Tasa</TableHead>
+                          <TableHead className="text-xs font-bold uppercase text-slate-500">Estado</TableHead>
+                          <TableHead className="text-xs font-bold uppercase text-slate-500">Desembolso</TableHead>
+                          <TableHead className="text-xs font-bold uppercase text-slate-500">Creado</TableHead>
+                          <TableHead>
+                            <span className="sr-only">Acciones</span>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {clientCredits.map((credit) => (
+                          <TableRow key={credit.id} className="text-sm">
+                            <TableCell className="font-semibold text-[#0d2f62]">{formatCurrency(credit.montoAprobado)}</TableCell>
+                            <TableCell>{credit.plazoMeses} meses</TableCell>
+                            <TableCell>{`${credit.tasaInteres.toFixed(2)}%`}</TableCell>
+                            <TableCell>
+                              <Badge className={getCreditStatusBadgeClass(credit.estado)}>
+                                {formatCreditStatus(credit.estado)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {credit.fechaDesembolso
+                                ? new Date(credit.fechaDesembolso).toLocaleDateString('es-CO')
+                                : 'Pendiente'}
+                            </TableCell>
+                            <TableCell>{formatDateTime(credit.createdAt)}</TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button
+                                    className="rounded-full p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                                    aria-label="Más acciones"
+                                  >
+                                    <MoreHorizontal className="h-5 w-5" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleEditCredit(credit)}>
+                                    Editar crédito
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="py-10 text-center text-sm text-slate-500">
+                    Aún no hay créditos registrados para este cliente.
+                  </div>
+                )}
+              </div>
+            </div>
           ) : (
             <div className="py-16 text-center text-sm text-slate-500">
               Aún no hay información disponible para esta sección.
@@ -414,5 +692,161 @@ export function ClientDetailView({ client, onBack, onEdit }: ClientDetailViewPro
         </div>
       </div>
     </section>
+
+    <Dialog open={creditDialogOpen} onOpenChange={handleCreditDialogOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>
+            {creditDialogMode === 'edit' ? 'Actualizar crédito' : 'Registrar nuevo crédito'}
+          </DialogTitle>
+          <DialogDescription>
+            {creditDialogMode === 'edit'
+              ? 'Modifica los datos del crédito seleccionado. Los cambios se reflejan inmediatamente.'
+              : 'Completa los datos principales del crédito. Se creará con estado EN_ESTUDIO por defecto.'}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="modal-credit-amount" className="text-xs font-semibold uppercase text-slate-500">
+              Monto aprobado
+            </Label>
+            <Input
+              id="modal-credit-amount"
+              type="number"
+              min="100000"
+              max="100000000"
+              step="10000"
+              value={creditAmount}
+              onChange={(event) => {
+                setCreditAmount(event.target.value)
+                setCreditFormError(null)
+                setCreditSuccessMessage(null)
+              }}
+              placeholder="5000000"
+            />
+            <p className="text-xs text-slate-500">Entre 100.000 y 100.000.000 COP.</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="modal-credit-term" className="text-xs font-semibold uppercase text-slate-500">
+              Plazo (meses)
+            </Label>
+            <Input
+              id="modal-credit-term"
+              type="number"
+              min="1"
+              max="120"
+              value={creditTerm}
+              onChange={(event) => {
+                setCreditTerm(event.target.value)
+                setCreditFormError(null)
+                setCreditSuccessMessage(null)
+              }}
+              placeholder="36"
+            />
+            <p className="text-xs text-slate-500">Definir un plazo entre 1 y 120 meses.</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="modal-credit-rate" className="text-xs font-semibold uppercase text-slate-500">
+              Tasa de interés (% E.A.)
+            </Label>
+            <Input
+              id="modal-credit-rate"
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              value={creditRate}
+              onChange={(event) => {
+                setCreditRate(event.target.value)
+                setCreditFormError(null)
+                setCreditSuccessMessage(null)
+              }}
+              placeholder="18.5"
+            />
+            <p className="text-xs text-slate-500">Ingresa la tasa aprobada para este crédito.</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="modal-credit-status" className="text-xs font-semibold uppercase text-slate-500">
+              Estado
+            </Label>
+            <Select
+              value={creditStatus}
+              onValueChange={(value) => {
+                setCreditStatus(value as (typeof creditStatusOptions)[number]['value'])
+                setCreditFormError(null)
+              }}
+            >
+              <SelectTrigger id="modal-credit-status">
+                <SelectValue placeholder="Selecciona un estado" />
+              </SelectTrigger>
+              <SelectContent>
+                {creditStatusOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="modal-credit-disbursement" className="text-xs font-semibold uppercase text-slate-500">
+              Fecha de desembolso (opcional)
+            </Label>
+            <Input
+              id="modal-credit-disbursement"
+              type="date"
+              value={creditDisbursementDate}
+              onChange={(event) => {
+                setCreditDisbursementDate(event.target.value)
+                setCreditFormError(null)
+                setCreditSuccessMessage(null)
+              }}
+            />
+            <p className="text-xs text-slate-500">Déjalo en blanco si aún no ha sido desembolsado.</p>
+          </div>
+
+          {creditFormError && <p className="text-sm text-red-600">{creditFormError}</p>}
+          {(createCreditMutation.error || updateCreditMutation.error) && (
+            <p className="text-sm text-red-600">
+              {createCreditMutation.error?.message || updateCreditMutation.error?.message}
+            </p>
+          )}
+        </div>
+
+        <DialogFooter className="gap-2 sm:gap-3">
+          <Button
+            variant="outline"
+            onClick={() => handleCreditDialogOpenChange(false)}
+            disabled={isSavingCredit}
+            className="border-slate-200 text-slate-600 hover:bg-[#f8fafc]"
+          >
+            Cancelar
+          </Button>
+          <Button
+            className={`text-white ${
+              creditDialogMode === 'edit'
+                ? 'bg-[#f26522] hover:bg-[#d85314]'
+                : 'bg-[#0d2f62] hover:bg-[#0b2349]'
+            }`}
+            onClick={handleSubmitCredit}
+            disabled={isSavingCredit}
+          >
+            {isSavingCredit
+              ? creditDialogMode === 'edit'
+                ? 'Actualizando...'
+                : 'Registrando...'
+              : creditDialogMode === 'edit'
+                ? 'Actualizar crédito'
+                : 'Guardar crédito'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }
