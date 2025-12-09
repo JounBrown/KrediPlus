@@ -156,3 +156,37 @@ async def delete_credit(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting credit: {str(e)}")
+
+
+@router.delete("/{credit_id}/documents/{document_id}")
+async def delete_credit_document(
+    credit_id: int,
+    document_id: int,
+    db: AsyncSession = Depends(get_db_session)
+    # TODO: Add authentication dependency here
+):
+    """
+    Delete a document that belongs to a specific credit
+    
+    - **credit_id:** ID of the credit
+    - **document_id:** ID of the document to delete
+    
+    **Validation:**
+    - Verifies that the document belongs to the specified credit
+    - Returns 404 if document doesn't exist or doesn't belong to credit
+    """
+    try:
+        from src.application.services.client_document_service import ClientDocumentService
+        from src.infrastructure.adapters.database.client_document_repository import SupabaseClientDocumentRepository
+        
+        # Create document service
+        document_repository = SupabaseClientDocumentRepository(db)
+        document_service = ClientDocumentService(document_repository)
+        
+        # Delete document with credit validation
+        return await document_service.delete_credit_document(credit_id, document_id)
+        
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

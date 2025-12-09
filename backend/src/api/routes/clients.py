@@ -211,3 +211,37 @@ async def search_clients_by_name(
         raise HTTPException(status_code=500, detail=f"Error searching clients: {str(e)}")
 
 
+@router.delete("/{client_id}/documents/{document_id}")
+async def delete_client_document(
+    client_id: int,
+    document_id: int,
+    db: AsyncSession = Depends(get_db_session)
+    # TODO: Add authentication dependency here
+):
+    """
+    Delete a document that belongs to a specific client
+    
+    - **client_id:** ID of the client
+    - **document_id:** ID of the document to delete
+    
+    **Validation:**
+    - Verifies that the document belongs to the specified client
+    - Returns 404 if document doesn't exist or doesn't belong to client
+    """
+    try:
+        from src.application.services.client_document_service import ClientDocumentService
+        from src.infrastructure.adapters.database.client_document_repository import SupabaseClientDocumentRepository
+        
+        # Create document service
+        document_repository = SupabaseClientDocumentRepository(db)
+        document_service = ClientDocumentService(document_repository)
+        
+        # Delete document with client validation
+        return await document_service.delete_client_document(client_id, document_id)
+        
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
