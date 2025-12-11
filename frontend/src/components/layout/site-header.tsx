@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { Users2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AuthButton } from '@/features/auth/components/auth-button'
+import { useAuthStore } from '@/store/auth-store'
 
 interface SiteHeaderProps {
   active?: 'home' | 'admin'
@@ -11,6 +12,8 @@ const navAnchorClasses =
   'hover:text-[#0d2f62] transition-colors text-sm font-medium text-slate-700'
 
 export function SiteHeader({ active = 'home' }: SiteHeaderProps) {
+  const user = useAuthStore((state) => state.user)
+
   return (
     <header className="sticky top-0 z-30 bg-white/90 backdrop-blur shadow-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
@@ -40,15 +43,17 @@ export function SiteHeader({ active = 'home' }: SiteHeaderProps) {
           <a href="/#contacto" className={navAnchorClasses}>
             Contáctanos
           </a>
-          <Link
-            to="/admin"
-            className={cn(
-              navAnchorClasses,
-              active === 'admin' ? 'text-[#f26522] font-semibold' : undefined,
-            )}
-          >
-            Administrador
-          </Link>
+          {user ? (
+            <Link
+              to="/admin"
+              className={cn(
+                navAnchorClasses,
+                active === 'admin' ? 'text-[#f26522] font-semibold' : undefined,
+              )}
+            >
+              Administrador
+            </Link>
+          ) : null}
         </nav>
 
         <AuthButton />

@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Route } from '@tanstack/react-router'
+import { useEffect, useMemo, useState } from 'react'
+import { Route, useNavigate } from '@tanstack/react-router'
 import { rootRoute } from './root'
 import { UploadPanel } from '@/features/admin/upload/components/upload-panel'
 import { AdminTabs, type AdminTabId } from '@/features/admin/layout/admin-tabs'
@@ -11,8 +11,21 @@ import { SimulatorConfigDeleteDialog } from '@/features/admin/simulator-config/c
 import { useSimulatorConfigs } from '@/features/admin/simulator-config/hooks/use-simulator-configs'
 import { useSimulatorConfigsQuery } from '@/features/simulator-config/hooks/use-simulator-configs-query'
 import { AppLayout } from '@/components/layout/app-layout'
+import { useAuthStore } from '@/store/auth-store'
 
 function AdminPage() {
+  const user = useAuthStore((state) => state.user)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!user) {
+      navigate({ to: '/', replace: true })
+    }
+  }, [navigate, user])
+
+  if (!user) {
+    return null
+  }
   const [activeTab, setActiveTab] = useState<AdminTabId>('requests')
   const {
     data: remoteSimulatorConfigs = [],

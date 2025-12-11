@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useRouter, useRouterState } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -29,6 +30,8 @@ export function AuthButton() {
   const [open, setOpen] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
 
+  const router = useRouter()
+  const currentPath = useRouterState({ select: (state) => state.location.pathname })
   const user = useAuthStore((state) => state.user)
   const setSession = useAuthStore((state) => state.setSession)
   const logout = useAuthStore((state) => state.logout)
@@ -76,6 +79,11 @@ export function AuthButton() {
     try {
       await logout()
       setAuthError(null)
+
+      const isOnAdmin = currentPath.startsWith('/admin')
+      if (isOnAdmin) {
+        router.navigate({ to: '/' })
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo cerrar sesión.'
       setAuthError(message)
