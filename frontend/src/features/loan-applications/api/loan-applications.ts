@@ -1,4 +1,5 @@
 import type { LoanApplication } from '@/features/submit-form/types/loan-application'
+import { fetchWithAuth } from '@/lib/api-client'
 
 const resourcePath = '/loan_applications/'
 
@@ -28,7 +29,7 @@ export type CreateLoanApplicationPayload = Pick<
 >
 
 export async function fetchLoanApplications(): Promise<LoanApplication[]> {
-  const response = await fetch(resolveResourceUrl(), {
+  const response = await fetchWithAuth(resolveResourceUrl(), {
     method: 'GET',
     headers: {
       Accept: 'application/json',

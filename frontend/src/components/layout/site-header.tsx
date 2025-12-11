@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Users2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { AuthButton } from '@/features/auth/components/auth-button'
 
 interface SiteHeaderProps {
   active?: 'home' | 'admin'
@@ -51,9 +51,7 @@ export function SiteHeader({ active = 'home' }: SiteHeaderProps) {
           </Link>
         </nav>
 
-        <Button className="rounded-full bg-[#f26522] px-5 py-2 text-sm font-semibold text-white shadow hover:bg-[#d85314]">
-          Logout
-        </Button>
+        <AuthButton />
       </div>
     </header>
   )

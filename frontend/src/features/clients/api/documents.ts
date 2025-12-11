@@ -1,3 +1,5 @@
+import { fetchWithAuth } from '@/lib/api-client'
+
 const uploadResourcePath = '/documents/upload'
 const clientDocumentsResourcePath = '/documents/client/'
 
@@ -112,7 +114,7 @@ export async function uploadClientDocument(
     formData.append('credit_id', String(creditId))
   }
 
-  const response = await fetch(getUploadUrl(), {
+  const response = await fetchWithAuth(getUploadUrl(), {
     method: 'POST',
     body: formData,
   })
@@ -125,7 +127,7 @@ export async function uploadClientDocument(
 }
 
 export async function fetchClientDocuments(clientId: number): Promise<ClientDocumentRecord[]> {
-  const response = await fetch(getClientDocumentsUrl(clientId), {
+  const response = await fetchWithAuth(getClientDocumentsUrl(clientId), {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -144,7 +146,7 @@ export async function deleteClientDocument(
   clientId: number,
   documentId: number,
 ): Promise<DeleteClientDocumentResponse> {
-  const response = await fetch(getDeleteClientDocumentUrl(clientId, documentId), {
+  const response = await fetchWithAuth(getDeleteClientDocumentUrl(clientId, documentId), {
     method: 'DELETE',
     headers: {
       Accept: 'application/json',

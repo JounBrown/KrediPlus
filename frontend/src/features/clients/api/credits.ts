@@ -1,3 +1,5 @@
+import { fetchWithAuth } from '@/lib/api-client'
+
 const clientCreditsResourceRoot = '/clients'
 const creditsByClientResourceRoot = '/credits/by_client/'
 
@@ -95,7 +97,7 @@ export async function createClientCredit(
   clientId: number,
   payload: CreateClientCreditPayload,
 ): Promise<ClientCreditRecord> {
-  const response = await fetch(resolveClientCreditsUrl(clientId), {
+  const response = await fetchWithAuth(resolveClientCreditsUrl(clientId), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -113,7 +115,7 @@ export async function createClientCredit(
 }
 
 export async function fetchClientCredits(clientId: number): Promise<ClientCreditRecord[]> {
-  const response = await fetch(resolveCreditsByClientUrl(clientId), {
+  const response = await fetchWithAuth(resolveCreditsByClientUrl(clientId), {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -133,7 +135,7 @@ export async function updateClientCredit(
   creditId: number,
   payload: UpdateClientCreditPayload,
 ): Promise<ClientCreditRecord> {
-  const response = await fetch(resolveClientCreditDetailUrl(clientId, creditId), {
+  const response = await fetchWithAuth(resolveClientCreditDetailUrl(clientId, creditId), {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

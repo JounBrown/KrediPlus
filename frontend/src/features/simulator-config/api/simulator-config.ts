@@ -1,4 +1,5 @@
 import type { SimulatorConfig } from '@/data/simulator-config'
+import { fetchWithAuth } from '@/lib/api-client'
 
 const resourcePath = '/simulator/config'
 
@@ -55,7 +56,7 @@ async function parseError(response: Response, fallbackMessage: string): Promise<
 }
 
 export async function fetchSimulatorConfigs(): Promise<SimulatorConfig[]> {
-  const response = await fetch(resolveResourceUrl(), {
+  const response = await fetchWithAuth(resolveResourceUrl(), {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -73,7 +74,7 @@ export async function fetchSimulatorConfigs(): Promise<SimulatorConfig[]> {
 export async function createSimulatorConfig(
   payload: CreateSimulatorConfigPayload,
 ): Promise<SimulatorConfig> {
-  const response = await fetch(resolveResourceUrl(), {
+  const response = await fetchWithAuth(resolveResourceUrl(), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -94,7 +95,7 @@ export async function updateSimulatorConfig(
   configId: number,
   payload: UpdateSimulatorConfigPayload,
 ): Promise<SimulatorConfig> {
-  const response = await fetch(resolveConfigDetailUrl(configId), {
+  const response = await fetchWithAuth(resolveConfigDetailUrl(configId), {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -112,7 +113,7 @@ export async function updateSimulatorConfig(
 }
 
 export async function activateSimulatorConfig(configId: number): Promise<SimulatorConfig> {
-  const response = await fetch(`${resolveConfigDetailUrl(configId)}/activate`, {
+  const response = await fetchWithAuth(`${resolveConfigDetailUrl(configId)}/activate`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -132,7 +133,7 @@ type DeleteSimulatorConfigResponse = {
 }
 
 export async function deleteSimulatorConfig(configId: number): Promise<string> {
-  const response = await fetch(resolveConfigDetailUrl(configId), {
+  const response = await fetchWithAuth(resolveConfigDetailUrl(configId), {
     method: 'DELETE',
     headers: {
       Accept: 'application/json',

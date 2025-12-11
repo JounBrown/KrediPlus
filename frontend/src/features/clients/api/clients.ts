@@ -1,4 +1,5 @@
 import type { ClientRecord } from '@/data/admin-clients'
+import { fetchWithAuth } from '@/lib/api-client'
 
 const resourcePath = '/clients/'
 
@@ -56,7 +57,7 @@ async function parseError(response: Response): Promise<never> {
 }
 
 export async function fetchClients(): Promise<ClientRecord[]> {
-  const response = await fetch(resolveCollectionUrl(), {
+  const response = await fetchWithAuth(resolveCollectionUrl(), {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -82,7 +83,7 @@ export type CreateClientPayload = {
 }
 
 export async function createClient(payload: CreateClientPayload): Promise<ClientRecord> {
-  const response = await fetch(resolveCollectionUrl(), {
+  const response = await fetchWithAuth(resolveCollectionUrl(), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -100,7 +101,7 @@ export async function createClient(payload: CreateClientPayload): Promise<Client
 }
 
 export async function fetchClientById(clientId: number): Promise<ClientRecord> {
-  const response = await fetch(resolveDetailUrl(clientId), {
+  const response = await fetchWithAuth(resolveDetailUrl(clientId), {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -127,7 +128,7 @@ export async function updateClient(
   clientId: number,
   payload: UpdateClientPayload,
 ): Promise<ClientRecord> {
-  const response = await fetch(resolveDetailUrl(clientId), {
+  const response = await fetchWithAuth(resolveDetailUrl(clientId), {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -145,7 +146,7 @@ export async function updateClient(
 }
 
 export async function deleteClient(clientId: number): Promise<void> {
-  const response = await fetch(resolveDetailUrl(clientId), {
+  const response = await fetchWithAuth(resolveDetailUrl(clientId), {
     method: 'DELETE',
   })
 
