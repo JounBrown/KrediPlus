@@ -7,6 +7,7 @@ load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
+SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET", SUPABASE_KEY or SUPABASE_SERVICE_KEY)
 
 # OpenAI Configuration (for future RAG implementation)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
@@ -17,10 +18,10 @@ if not DATABASE_URL and SUPABASE_URL:
     # Extract database URL from Supabase URL if needed
     DATABASE_URL = SUPABASE_URL.replace("https://", "postgresql://postgres:")
 
-# JWT Configuration
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
-JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", "24"))
+# JWT Configuration (para Supabase Auth)
+# Nota: Supabase maneja la expiración automáticamente
+JWT_ALGORITHM = "HS256"  # Supabase usa HS256
+JWT_AUDIENCE = "authenticated"  # Audience estándar de Supabase
 
 # Server Configuration
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"

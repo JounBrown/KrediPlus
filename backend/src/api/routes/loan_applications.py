@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.api.middleware.auth_middleware import get_current_user
 from src.application.services.loan_application_service import LoanApplicationService
 from src.application.dtos.loan_application_dtos import (
     CreateLoanApplicationRequest,
@@ -12,6 +13,7 @@ from src.application.dtos.loan_application_dtos import (
     LoanApplicationStatsResponse
 )
 from src.infrastructure.adapters.database.connection import get_db_session
+from src.domain.entities.user import User
 from src.infrastructure.adapters.database.loan_application_repository import SupabaseLoanApplicationRepository
 
 router = APIRouter(prefix="/loan_applications", tags=["Loan Applications"])
@@ -48,7 +50,8 @@ async def create_loan_application(
 @router.get("/{application_id}", response_model=LoanApplicationResponse)
 async def get_loan_application(
     application_id: int,
-    service: LoanApplicationService = Depends(get_loan_application_service)
+    service: LoanApplicationService = Depends(get_loan_application_service),
+    _: User = Depends(get_current_user)
 ):
     """Get a specific loan application by ID"""
     try:
@@ -64,7 +67,8 @@ async def get_loan_application(
 
 @router.get("/", response_model=list[LoanApplicationResponse])
 async def list_loan_applications(
-    service: LoanApplicationService = Depends(get_loan_application_service)
+    service: LoanApplicationService = Depends(get_loan_application_service),
+    _: User = Depends(get_current_user)
 ):
     """
     List all loan applications
@@ -79,7 +83,8 @@ async def list_loan_applications(
 @router.get("/by_cedula/{cedula}", response_model=list[LoanApplicationResponse])
 async def get_applications_by_cedula(
     cedula: str,
-    service: LoanApplicationService = Depends(get_loan_application_service)
+    service: LoanApplicationService = Depends(get_loan_application_service),
+    _: User = Depends(get_current_user)
 ):
     """
     Get loan applications for a specific client by cedula
@@ -107,7 +112,8 @@ async def get_applications_by_cedula(
 async def update_application(
     application_id: int,
     request: UpdateLoanApplicationRequest,
-    service: LoanApplicationService = Depends(get_loan_application_service)
+    service: LoanApplicationService = Depends(get_loan_application_service),
+    _: User = Depends(get_current_user)
 ):
     """
     Update loan application
@@ -133,7 +139,8 @@ async def update_application(
 @router.delete("/{application_id}")
 async def delete_application(
     application_id: int,
-    db: AsyncSession = Depends(get_db_session)
+    db: AsyncSession = Depends(get_db_session),
+    _: User = Depends(get_current_user)
 ):
     """
     Delete a loan application

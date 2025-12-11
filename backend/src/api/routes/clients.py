@@ -11,10 +11,15 @@ from src.application.dtos.client_dtos import (
     SearchClientsRequest
 )
 from src.application.dtos.credit_dtos import CreateCreditForClientRequest, CreditResponse, UpdateCreditRequest
+from src.api.middleware.auth_middleware import get_current_user
 from src.infrastructure.adapters.database.connection import get_db_session
 from src.infrastructure.adapters.database.client_repository import SupabaseClientRepository
 
-router = APIRouter(prefix="/clients", tags=["Clients"])
+router = APIRouter(
+    prefix="/clients",
+    tags=["Clients"],
+    dependencies=[Depends(get_current_user)]
+)
 
 
 def get_client_service(db: AsyncSession = Depends(get_db_session)) -> ClientService:
@@ -217,7 +222,6 @@ async def delete_client_document(
     client_id: int,
     document_id: int,
     db: AsyncSession = Depends(get_db_session)
-    # TODO: Add authentication dependency here
 ):
     """
     Delete a document that belongs to a specific client
@@ -251,7 +255,6 @@ async def create_credit_for_client(
     client_id: int,
     credit_request: CreateCreditForClientRequest,
     db: AsyncSession = Depends(get_db_session)
-    # TODO: Add authentication dependency here
 ):
     """
     Create a new credit for a specific client
@@ -311,7 +314,6 @@ async def update_client_credit(
     credit_id: int,
     credit_request: UpdateCreditRequest,
     db: AsyncSession = Depends(get_db_session)
-    # TODO: Add authentication dependency here
 ):
     """
     Update a credit that belongs to a specific client

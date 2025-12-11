@@ -32,15 +32,6 @@ app.include_router(credit_simulator_router, prefix="/api/v1")
 app.include_router(documents_router, prefix="/api/v1")
 
 
-@app.get("/")
-async def root():
-    """Health check endpoint"""
-    return {
-        "status": "ok",
-        "message": "KrediPlus RAG Backend is running",
-        "version": "0.1.0"
-    }
-
 
 @app.get("/health")
 async def health():
@@ -55,4 +46,5 @@ if __name__ == "__main__":
         host=HOST,
         port=PORT,
         reload=DEBUG
+        
     )

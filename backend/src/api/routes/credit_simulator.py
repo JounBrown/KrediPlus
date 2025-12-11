@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.api.middleware.auth_middleware import get_current_user, require_admin
 from src.application.services.credit_simulator_service import CreditSimulatorService
 from src.application.dtos.credit_simulator_dtos import (
     SimulateCreditRequest,
@@ -9,9 +10,13 @@ from src.application.dtos.credit_simulator_dtos import (
     UpdateSimulatorConfigRequest
 )
 from src.infrastructure.adapters.database.connection import get_db_session
+from src.domain.entities.user import User
 from src.infrastructure.adapters.database.credit_simulator_repository import SupabaseCreditSimulatorRepository
 
-router = APIRouter(prefix="/simulator", tags=["Credit Simulator"])
+router = APIRouter(
+    prefix="/simulator",
+    tags=["Credit Simulator"]
+)
 
 
 def get_simulator_service(db: AsyncSession = Depends(get_db_session)) -> CreditSimulatorService:
@@ -23,7 +28,8 @@ def get_simulator_service(db: AsyncSession = Depends(get_db_session)) -> CreditS
 @router.post("/config", response_model=SimulatorConfigResponse)
 async def create_or_update_config(
     config: CreateSimulatorConfigRequest,
-    service: CreditSimulatorService = Depends(get_simulator_service)
+    service: CreditSimulatorService = Depends(get_simulator_service),
+    _admin_user: User = Depends(require_admin)
 ):
     """
     Create or update simulator configuration
@@ -66,7 +72,8 @@ async def simulate_credit_get(
 
 @router.get("/config", response_model=list[SimulatorConfigResponse])
 async def get_all_simulator_configs(
-    service: CreditSimulatorService = Depends(get_simulator_service)
+    service: CreditSimulatorService = Depends(get_simulator_service),
+    _user: User = Depends(get_current_user)
 ):
     """
     Get all simulator configurations
@@ -85,7 +92,8 @@ async def get_all_simulator_configs(
 async def modify_simulator_config(
     config_id: int,
     config: UpdateSimulatorConfigRequest,
-    service: CreditSimulatorService = Depends(get_simulator_service)
+    service: CreditSimulatorService = Depends(get_simulator_service),
+    _admin_user: User = Depends(require_admin)
 ):
     """
     Modify existing simulator configuration by ID (partial updates allowed)
@@ -109,7 +117,8 @@ async def modify_simulator_config(
 @router.post("/config/{config_id}/activate", response_model=SimulatorConfigResponse)
 async def activate_simulator_config(
     config_id: int,
-    service: CreditSimulatorService = Depends(get_simulator_service)
+    service: CreditSimulatorService = Depends(get_simulator_service),
+    _admin_user: User = Depends(require_admin)
 ):
     """
     Activate a specific simulator configuration
@@ -132,7 +141,8 @@ async def activate_simulator_config(
 @router.delete("/config/{config_id}")
 async def delete_simulator_config(
     config_id: int,
-    service: CreditSimulatorService = Depends(get_simulator_service)
+    service: CreditSimulatorService = Depends(get_simulator_service),
+    _admin_user: User = Depends(require_admin)
 ):
     """
     Delete a simulator configuration

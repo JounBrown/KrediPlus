@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.api.middleware.auth_middleware import get_current_user
 from src.application.services.credit_service import CreditService
 from src.application.dtos.credit_dtos import (
     CreateCreditRequest,
@@ -11,7 +12,11 @@ from src.application.dtos.credit_dtos import (
 from src.infrastructure.adapters.database.connection import get_db_session
 from src.infrastructure.adapters.database.credit_repository import SupabaseCreditRepository
 
-router = APIRouter(prefix="/credits", tags=["Credits"])
+router = APIRouter(
+    prefix="/credits",
+    tags=["Credits"],
+    dependencies=[Depends(get_current_user)]
+)
 
 
 def get_credit_service(db: AsyncSession = Depends(get_db_session)) -> CreditService:
@@ -165,7 +170,6 @@ async def delete_credit_document(
     credit_id: int,
     document_id: int,
     db: AsyncSession = Depends(get_db_session)
-    # TODO: Add authentication dependency here
 ):
     """
     Delete a document that belongs to a specific credit

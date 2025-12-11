@@ -2,12 +2,17 @@ from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List, Union
 
+from src.api.middleware.auth_middleware import get_current_user
 from src.application.services.client_document_service import ClientDocumentService
 from src.application.dtos.client_document_dtos import ClientDocumentResponse
 from src.infrastructure.adapters.database.connection import get_db_session
 from src.infrastructure.adapters.database.client_document_repository import SupabaseClientDocumentRepository
 
-router = APIRouter(prefix="/documents", tags=["Documents"])
+router = APIRouter(
+    prefix="/documents",
+    tags=["Documents"],
+    dependencies=[Depends(get_current_user)]
+)
 
 
 def get_document_service(db: AsyncSession = Depends(get_db_session)) -> ClientDocumentService:
@@ -33,55 +38,9 @@ async def upload_document(
     client_id: int = Form(..., description="Client ID"),
     credit_id: str = Form("", description="Credit ID (optional, can be empty string)"),
     service: ClientDocumentService = Depends(get_document_service)
-    # TODO: Add authentication dependency here
-    # current_admin = Depends(get_current_admin)
 ):
     """
     Upload a document file to Supabase Storage and save record to database
-    
-    **Endpoint Specifications:**
-    - **Framework:** FastAPI
-    - **Route:** POST /documents/upload
-    - **Content Type:** multipart/form-data
-    
-    **Parameters:**
-    - **file:** Binary file (required) - The document to upload
-    - **document_type:** String (required) - Category of document, must be valid enum value
-    - **client_id:** Integer (required) - ID of the client
-    - **credit_id:** Integer (optional) - ID of the credit
-    
-    **Process:**
-    1. Generate unique filename using document_type and UUID
-    2. Build storage path: client_files/{client_id}/{unique_filename}
-    3. Read file content asynchronously
-    4. Upload to Supabase Storage bucket 'krediplus_docs'
-    5. Insert record in client_documents table
-    6. Handle errors and cleanup if needed
-    
-    **Valid document_type values:**
-    - CEDULA_FRENTE
-    - CEDULA_REVERSO
-    - COMPROBANTE_INGRESOS
-    - CERTIFICADO_LABORAL
-    - SOLICITUD_CREDITO_FIRMADA
-    - PAGARE_FIRMADO
-    - COMPROBANTE_DOMICILIO
-    - EXTRACTO_BANCARIO
-    - OTRO
-    
-    **Response:**
-    - **201 Created:** File uploaded successfully
-      ```json
-      {
-        "status": "success",
-        "message": "Archivo subido exitosamente",
-        "path": "client_files/3/CEDULA_FRENTE_uuid.pdf",
-        "document_id": 1,
-        "file_url": "https://supabase-url/storage/v1/object/public/krediplus_docs/client_files/3/CEDULA_FRENTE_uuid.pdf"
-      }
-      ```
-    - **400 Bad Request:** Invalid parameters or file
-    - **500 Internal Server Error:** Upload or database error
     """
     try:
         # Validate file size (optional - add if needed)
@@ -125,7 +84,6 @@ async def upload_document(
 async def get_client_documents(
     client_id: int,
     service: ClientDocumentService = Depends(get_document_service)
-    # TODO: Add authentication dependency here
 ):
     """
     Get all documents for a specific client
@@ -142,7 +100,6 @@ async def get_client_documents(
 async def get_credit_documents(
     credit_id: int,
     service: ClientDocumentService = Depends(get_document_service)
-    # TODO: Add authentication dependency here
 ):
     """
     Get all documents for a specific credit
@@ -155,17 +112,11 @@ async def get_credit_documents(
         raise HTTPException(status_code=500, detail=f"Error getting credit documents: {str(e)}")
 
 
-# DELETE endpoints moved to specific contexts:
-# - DELETE /api/v1/clients/{client_id}/documents/{document_id}
-# - DELETE /api/v1/credits/{credit_id}/documents/{document_id}
-
-
 @router.get("/{document_id}/download")
 async def get_document_download_url(
     document_id: int,
     expires_in: int = 3600,
     service: ClientDocumentService = Depends(get_document_service)
-    # TODO: Add authentication dependency here
 ):
     """
     Get a signed URL for downloading a document
