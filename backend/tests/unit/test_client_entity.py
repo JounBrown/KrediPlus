@@ -17,7 +17,7 @@ class TestClientValidation:
             cedula="12345678",
             email="juan@email.com",
             telefono="3001234567",
-            fecha_nacimiento=date(1950, 1, 1),
+            fecha_nacimiento=date(1990, 1, 1),
             direccion="Calle 123"
         )
         
@@ -43,7 +43,7 @@ class TestClientValidation:
                 cedula="12345678",
                 email=invalid_email,
                 telefono="3001234567",
-                fecha_nacimiento=date(1950, 1, 1),
+                fecha_nacimiento=date(1990, 1, 1),
                 direccion="Calle 123"
             )
             assert client.validate_email() == False, f"Email '{invalid_email}' should be invalid"
@@ -67,7 +67,7 @@ class TestClientValidation:
                 cedula="12345678",
                 email="juan@email.com",
                 telefono=valid_phone,
-                fecha_nacimiento=date(1950, 1, 1),
+                fecha_nacimiento=date(1990, 1, 1),
                 direccion="Calle 123"
             )
             assert client.validate_phone() == True, f"Phone '{valid_phone}' should be valid"
@@ -92,7 +92,7 @@ class TestClientValidation:
                 cedula="12345678",
                 email="juan@email.com",
                 telefono=invalid_phone,
-                fecha_nacimiento=date(1950, 1, 1),
+                fecha_nacimiento=date(1990, 1, 1),
                 direccion="Calle 123"
             )
             assert client.validate_phone() == False, f"Phone '{invalid_phone}' should be invalid"
@@ -115,7 +115,7 @@ class TestClientValidation:
                 cedula=valid_cedula,
                 email="juan@email.com",
                 telefono="3001234567",
-                fecha_nacimiento=date(1950, 1, 1),
+                fecha_nacimiento=date(1990, 1, 1),
                 direccion="Calle 123"
             )
             assert client.validate_document() == True, f"Cedula '{valid_cedula}' should be valid"
@@ -138,82 +138,82 @@ class TestClientValidation:
                 cedula=invalid_cedula,
                 email="juan@email.com",
                 telefono="3001234567",
-                fecha_nacimiento=date(1950, 1, 1),
+                fecha_nacimiento=date(1990, 1, 1),
                 direccion="Calle 123"
             )
             assert client.validate_document() == False, f"Cedula '{invalid_cedula}' should be invalid"
     
     def test_validate_age_valid_range(self):
-        """Test valid age range (70-110 years)"""
+        """Test valid age range (≥22 years)"""
         current_year = date.today().year
         
-        # Test 70 years old (minimum)
-        client_70 = Client(
+        # Test 22 years old (minimum)
+        client_22 = Client(
             id=None,
             nombre_completo="Juan Pérez",
             cedula="12345678",
             email="juan@email.com",
             telefono="3001234567",
-            fecha_nacimiento=date(current_year - 70, 1, 1),
+            fecha_nacimiento=date(current_year - 22, 1, 1),
             direccion="Calle 123"
         )
-        assert client_70.validate_age() == True
-        assert client_70.get_age() == 70
+        assert client_22.validate_age() == True
+        assert client_22.get_age() == 22
         
-        # Test 110 years old (maximum)
-        client_110 = Client(
+        # Test 35 years old (middle range)
+        client_35 = Client(
             id=None,
             nombre_completo="María García",
             cedula="87654321",
             email="maria@email.com",
             telefono="3001234567",
-            fecha_nacimiento=date(current_year - 110, 1, 1),
+            fecha_nacimiento=date(current_year - 35, 1, 1),
             direccion="Calle 456"
         )
-        assert client_110.validate_age() == True
-        assert client_110.get_age() == 110
+        assert client_35.validate_age() == True
+        assert client_35.get_age() == 35
         
-        # Test 85 years old (middle range)
-        client_85 = Client(
+        # Test 65 years old (older adult)
+        client_65 = Client(
             id=None,
             nombre_completo="Carlos López",
             cedula="11223344",
             email="carlos@email.com",
             telefono="3001234567",
-            fecha_nacimiento=date(current_year - 85, 6, 15),
+            fecha_nacimiento=date(current_year - 65, 6, 15),
             direccion="Carrera 789"
         )
-        assert client_85.validate_age() == True
+        assert client_65.validate_age() == True
     
     def test_validate_age_invalid_range(self):
-        """Test invalid age range (outside 70-110 years)"""
+        """Test invalid age range (under 22 years)"""
         current_year = date.today().year
         
-        # Test 69 years old (too young)
+        # Test 21 years old (too young)
         client_young = Client(
             id=None,
             nombre_completo="Joven Pérez",
             cedula="12345678",
             email="joven@email.com",
             telefono="3001234567",
-            fecha_nacimiento=date(current_year - 69, 1, 1),
+            fecha_nacimiento=date(current_year - 21, 1, 1),
             direccion="Calle 123"
         )
         assert client_young.validate_age() == False
-        assert client_young.get_age() == 69
+        assert client_young.get_age() == 21
         
-        # Test 111 years old (too old)
-        client_old = Client(
+        # Test 18 years old (too young)
+        client_teen = Client(
             id=None,
-            nombre_completo="Muy Viejo",
+            nombre_completo="Adolescente García",
             cedula="87654321",
-            email="viejo@email.com",
+            email="teen@email.com",
             telefono="3001234567",
-            fecha_nacimiento=date(current_year - 111, 1, 1),
+            fecha_nacimiento=date(current_year - 18, 1, 1),
             direccion="Calle 456"
         )
-        assert client_old.validate_age() == False
-        assert client_old.get_age() == 111
+        assert client_teen.validate_age() == False
+        assert client_teen.get_age() == 18
     
     def test_is_complete_valid(self, sample_client):
         """Test complete client data"""
@@ -228,7 +228,7 @@ class TestClientValidation:
             cedula="12345678",
             email="juan@email.com",
             telefono="3001234567",
-            fecha_nacimiento=date(1950, 1, 1),
+            fecha_nacimiento=date(1990, 1, 1),
             direccion="Calle 123"
         )
         assert client_no_name.is_complete() == False
@@ -240,7 +240,7 @@ class TestClientValidation:
             cedula="12345678",
             email="",
             telefono="3001234567",
-            fecha_nacimiento=date(1950, 1, 1),
+            fecha_nacimiento=date(1990, 1, 1),
             direccion="Calle 123"
         )
         assert client_no_email.is_complete() == False
@@ -319,7 +319,7 @@ class TestClientBusinessLogic:
         assert "Formato de email inválido" in errors
         assert "Formato de teléfono inválido (debe ser número colombiano)" in errors
         assert "Formato de cédula inválido (7-10 dígitos)" in errors
-        assert "Edad inválida" in errors[4]  # Age error message contains the actual age
+        assert "años (debe ser mayor de 22 años)" in errors[4]  # Age error message contains the actual age
     
     def test_get_validation_errors_specific(self):
         """Test specific validation error messages"""
@@ -329,7 +329,7 @@ class TestClientBusinessLogic:
             cedula="123",  # Invalid cedula
             email="invalid-email",  # Invalid email
             telefono="123",  # Invalid phone
-            fecha_nacimiento=date(2010, 1, 1),  # Invalid age
+            fecha_nacimiento=date(2010, 1, 1),  # Invalid age (15 years old)
             direccion="Calle 123"
         )
         
@@ -338,7 +338,7 @@ class TestClientBusinessLogic:
         assert "Formato de email inválido" in errors
         assert "Formato de teléfono inválido (debe ser número colombiano)" in errors
         assert "Formato de cédula inválido (7-10 dígitos)" in errors
-        assert "años (debe estar entre 70 y 110 años)" in errors[3]
+        assert "años (debe ser mayor de 22 años)" in errors[3]
 
 
 class TestClientEdgeCases:
@@ -350,9 +350,9 @@ class TestClientEdgeCases:
         
         # Create client born next month (if possible)
         if current_date.month < 12:
-            birth_date = date(current_date.year - 75, current_date.month + 1, 1)
+            birth_date = date(current_date.year - 25, current_date.month + 1, 1)
         else:
-            birth_date = date(current_date.year - 75, 1, 1)
+            birth_date = date(current_date.year - 25, 1, 1)
         
         client = Client(
             id=None,
@@ -388,7 +388,7 @@ class TestClientEdgeCases:
                 cedula="12345678",
                 email="test@email.com",
                 telefono=phone,
-                fecha_nacimiento=date(1950, 1, 1),
+                fecha_nacimiento=date(1990, 1, 1),
                 direccion="Test Address"
             )
             assert client.validate_phone() == True, f"Phone '{phone}' should be valid"
@@ -409,7 +409,7 @@ class TestClientEdgeCases:
                 cedula=cedula,
                 email="test@email.com",
                 telefono="3001234567",
-                fecha_nacimiento=date(1950, 1, 1),
+                fecha_nacimiento=date(1990, 1, 1),
                 direccion="Test Address"
             )
             assert client.validate_document() == True, f"Cedula '{cedula}' should be valid"
