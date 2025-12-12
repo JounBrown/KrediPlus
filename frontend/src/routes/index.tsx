@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Route } from '@tanstack/react-router'
-import { Button } from '@/components/ui/button'
 import { rootRoute } from './root'
-import { MessageCircle, Send, X } from 'lucide-react'
+import { MessageCircle } from 'lucide-react'
 import { CreditSimulator } from '@/features/simulator/components/credit-simulator'
 import { defaultSimulatorConfig } from '@/data/simulator-config'
 import { SubmitFormCard } from '@/features/submit-form/components/submit-form-card'
 import { AppLayout } from '@/components/layout/app-layout'
+import { ChatbotWidget } from '@/features/chatbot/components/chatbot-widget'
 
 function IndexPage() {
   const [isChatOpen, setIsChatOpen] = useState(false)
@@ -142,41 +142,7 @@ function IndexPage() {
             onClick={() => setIsChatOpen(false)}
           />
 
-          <div className="fixed bottom-20 right-6 z-50 w-[360px] max-w-[calc(100%-2rem)] rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
-            <div className="flex items-center justify-between border-b px-4 py-3">
-              <div>
-                <p className="text-sm font-semibold text-[#0d2f62]">Contáctanos</p>
-                <p className="text-xs text-slate-500">¿Cómo podemos ayudarte?</p>
-              </div>
-              <button
-                className="rounded-full p-1 text-slate-500 transition hover:bg-slate-100"
-                onClick={() => setIsChatOpen(false)}
-                aria-label="Cerrar chatbot"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="h-64 bg-slate-50/80 px-4 py-3 text-center text-sm text-slate-500">
-              <p className="mt-20">Estamos en línea para ayudarte.</p>
-              <p className="text-xs text-slate-400">Escribe tu mensaje abajo.</p>
-            </div>
-
-            <div className="flex items-center gap-2 border-t px-4 py-3">
-              <input
-                type="text"
-                placeholder="Escribe tu mensaje..."
-                className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#f26522] focus:ring-2 focus:ring-[#f26522]/20"
-              />
-              <Button
-                size="icon"
-                className="h-10 w-10 bg-[#f26522] text-white hover:bg-[#d85314]"
-                aria-label="Enviar mensaje"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <ChatbotWidget onClose={() => setIsChatOpen(false)} />
         </>
       )}
     </AppLayout>

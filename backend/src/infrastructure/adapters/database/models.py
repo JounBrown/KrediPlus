@@ -118,3 +118,48 @@ class ClientDocumentModel(Base):
     # Relationships
     client = relationship("ClientModel", back_populates="documents")
     credit = relationship("CreditModel", back_populates="documents")
+
+
+class ProcessingStatusEnum(str, enum.Enum):
+    """Enum for RAG document processing status"""
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class ContextDocumentModel(Base):
+    """SQLAlchemy model for RAG context documents (maps to 'context_documents' table)"""
+    __tablename__ = "context_documents"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    filename = Column(Text, nullable=False)
+    storage_url = Column(Text, nullable=False)
+    processing_status = Column(
+        Enum(
+            'pending', 'processing', 'completed', 'failed',
+            name="processing_status_enum",
+            create_type=False
+        ),
+        nullable=False,
+        default='pending'
+    )
+    
+    # Relationship with chunks
+    chunks = relationship("ChunkModel", back_populates="document", cascade="all, delete-orphan")
+
+
+class ChunkModel(Base):
+    """SQLAlchemy model for RAG chunks (maps to 'Chunk' table)"""
+    __tablename__ = "Chunk"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    content = Column(Text, nullable=False)
+    chunk_metadata = Column("metadata", JSON, nullable=True)  # 'metadata' is reserved in SQLAlchemy
+    document_id = Column(Integer, ForeignKey("context_documents.id", ondelete="CASCADE"), nullable=False)
+    # Note: embedding column is vector type, handled separately via raw SQL for pgvector
+    
+    # Relationship with document
+    document = relationship("ContextDocumentModel", back_populates="chunks")
