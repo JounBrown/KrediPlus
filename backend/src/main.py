@@ -6,6 +6,8 @@ from src.api.routes.clients import router as clients_router
 from src.api.routes.credits import router as credits_router
 from src.api.routes.credit_simulator import router as credit_simulator_router
 from src.api.routes.documents import router as documents_router
+from src.api.routes.rag_documents import router as rag_documents_router
+from src.api.routes.chat import router as chat_router
 
 
 app = FastAPI(
@@ -30,6 +32,10 @@ app.include_router(clients_router, prefix="/api/v1")
 app.include_router(credits_router, prefix="/api/v1")
 app.include_router(credit_simulator_router, prefix="/api/v1")
 app.include_router(documents_router, prefix="/api/v1")
+
+# RAG Chatbot routes
+app.include_router(rag_documents_router, prefix="/api/v1")  # Protected - requires auth
+app.include_router(chat_router, prefix="/api/v1")  # Public - no auth required
 
 
 
