@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { SiteHeader } from './site-header'
 import { Footer } from './Footer'
 import { cn } from '@/lib/utils'
