@@ -1,7 +1,9 @@
 import { useMutation } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { sendChatMessage } from '../api/chat'
-import type { ChatbotResponse, ChatSource } from '../types/chat'
+import type { ChatbotResponse, ChatHistoryItem, ChatSource } from '../types/chat'
+
+const STORAGE_KEY = 'krediplus_chat_history'
 
 export type ChatMessage = {
   id: string
@@ -18,12 +20,35 @@ function createMessageId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
 }
 
-export function useChatbot() {
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+function loadMessages(): ChatMessage[] {
+  try {
+    const stored = sessionStorage.getItem(STORAGE_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
 
-  const mutation = useMutation<ChatbotResponse, Error, string>({
-    mutationFn: (query) => sendChatMessage(query),
-    onSuccess: (response, query) => {
+function saveMessages(messages: ChatMessage[]) {
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages))
+}
+
+function toHistory(messages: ChatMessage[]): ChatHistoryItem[] {
+  return messages
+    .filter((m) => !m.isError)
+    .map((m) => ({ role: m.role, content: m.content }))
+}
+
+export function useChatbot() {
+  const [messages, setMessages] = useState<ChatMessage[]>(loadMessages)
+
+  useEffect(() => {
+    saveMessages(messages)
+  }, [messages])
+
+  const mutation = useMutation<ChatbotResponse, Error, { query: string; history: ChatHistoryItem[] }>({
+    mutationFn: ({ query, history }) => sendChatMessage(query, history),
+    onSuccess: (response, { query }) => {
       setMessages((prev) => [
         ...prev,
         {
@@ -53,9 +78,9 @@ export function useChatbot() {
 
   const sendMessage = (rawQuery: string) => {
     const query = rawQuery.trim()
-    if (!query || mutation.isPending) {
-      return false
-    }
+    if (!query || mutation.isPending) return false
+
+    const history = toHistory(messages)
 
     setMessages((prev) => [
       ...prev,
@@ -67,12 +92,13 @@ export function useChatbot() {
       },
     ])
 
-    mutation.mutate(query)
+    mutation.mutate({ query, history })
     return true
   }
 
-  const resetConversation = () => {
+  const clearChat = () => {
     setMessages([])
+    sessionStorage.removeItem(STORAGE_KEY)
     mutation.reset()
   }
 
@@ -80,6 +106,6 @@ export function useChatbot() {
     messages,
     sendMessage,
     isSending: mutation.isPending,
-    resetConversation,
+    clearChat,
   }
 }

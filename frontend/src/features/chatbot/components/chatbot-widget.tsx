@@ -9,7 +9,7 @@ type ChatbotWidgetProps = {
 }
 
 export function ChatbotWidget({ onClose }: ChatbotWidgetProps) {
-  const { messages, sendMessage, isSending, resetConversation } = useChatbot()
+  const { messages, sendMessage, isSending, clearChat } = useChatbot()
   const [inputValue, setInputValue] = useState('')
   const scrollRef = useRef<HTMLDivElement | null>(null)
 
@@ -39,7 +39,7 @@ export function ChatbotWidget({ onClose }: ChatbotWidgetProps) {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-slate-500 hover:text-[#f26522]"
-            onClick={resetConversation}
+            onClick={clearChat}
             disabled={!canReset}
             aria-label="Reiniciar conversación"
           >

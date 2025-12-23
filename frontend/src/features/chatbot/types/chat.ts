@@ -1,5 +1,11 @@
+export type ChatHistoryItem = {
+  role: 'user' | 'assistant'
+  content: string
+}
+
 export type ChatRequestPayload = {
-  query: string
+  question: string
+  history: ChatHistoryItem[]
 }
 
 export type ChatSourceMetadata = {

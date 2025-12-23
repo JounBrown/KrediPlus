@@ -1,6 +1,6 @@
 import type {
   ChatbotResponse,
-  ChatRequestPayload,
+  ChatHistoryItem,
   ChatSource,
   ChatSourceMetadata,
 } from '../types/chat'
@@ -83,8 +83,8 @@ async function parseChatError(response: Response): Promise<never> {
   throw new Error(text || fallbackMessage)
 }
 
-export async function sendChatMessage(query: string): Promise<ChatbotResponse> {
-  const payload: ChatRequestPayload = { query }
+export async function sendChatMessage(question: string, history: ChatHistoryItem[]): Promise<ChatbotResponse> {
+  const payload = { question, history }
   const response = await fetch(resolveChatUrl(), {
     method: 'POST',
     headers: {
