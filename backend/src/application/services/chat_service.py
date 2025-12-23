@@ -52,17 +52,19 @@ class ChatService:
         self._match_threshold = match_threshold
         self._max_chunks = max_chunks
     
-    async def process_query(self, query: str) -> ChatResponse:
+    async def process_query(self, query: str, history: list = None) -> ChatResponse:
         """
         Process a user query and generate a response.
         
         Args:
             query: User's question
+            history: Conversation history (list of {"role": str, "content": str})
             
         Returns:
             ChatResponse with answer and source references
         """
         start_time = time.time()
+        history = history or []
         
         if not query or not query.strip():
             return ChatResponse(
@@ -113,9 +115,9 @@ class ChatService:
         # Build context from chunks
         context = self._build_context(similar_chunks)
         
-        # Generate response using LLM
+        # Generate response using LLM with history
         try:
-            response_text = await self._llm_port.generate_response(query, context)
+            response_text = await self._llm_port.generate_response_with_history(query, context, history)
         except Exception as e:
             return ChatResponse(
                 response="Lo siento, hubo un error generando la respuesta. Por favor intenta de nuevo.",

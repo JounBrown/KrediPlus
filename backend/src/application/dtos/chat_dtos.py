@@ -1,10 +1,17 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Literal
+
+
+class Message(BaseModel):
+    """Represents a single message in conversation history"""
+    role: Literal["user", "assistant"]
+    content: str
 
 
 class ChatRequest(BaseModel):
-    """DTO for chat request"""
-    query: str = Field(..., min_length=1, max_length=2000, description="User's question")
+    """DTO for chat request from frontend"""
+    question: str = Field(..., min_length=1, max_length=2000)
+    history: Optional[List[Message]] = []
 
 
 class ChunkReferenceDto(BaseModel):

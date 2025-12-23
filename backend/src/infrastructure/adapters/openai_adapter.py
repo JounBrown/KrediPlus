@@ -1,8 +1,26 @@
-from typing import List
+from typing import List, Optional
 from openai import AsyncOpenAI
 from src.domain.ports.embedding_port import EmbeddingPort
 from src.domain.ports.llm_port import LLMPort
 from src.config import OPENAI_API_KEY
+
+
+SYSTEM_PROMPT = """Eres un asistente virtual de KrediPlus, una plataforma financiera digital innovadora dedicada a democratizar el acceso al crédito para pequeñas y medianas empresas (PYMEs) y emprendedores.
+
+Tu objetivo es responder preguntas de los usuarios basándote en el contexto proporcionado.
+
+Reglas:
+- Responde en español de manera clara, amigable y profesional
+- Usa el contexto proporcionado para dar respuestas precisas
+- Si la pregunta es muy general (como "hola", "qué sabes", etc.), presenta brevemente a KrediPlus y ofrece ayuda
+- Si no encuentras información específica en el contexto, puedes dar información general sobre KrediPlus
+- Sé conciso pero completo en tus respuestas
+- Si el usuario pregunta algo completamente fuera del alcance de KrediPlus, redirige amablemente
+
+Información básica de KrediPlus que siempre puedes mencionar:
+- KrediPlus es una plataforma de crédito digital para PYMEs y emprendedores
+- Ofrece acceso rápido y equitativo a crédito
+- Simplifica procesos de solicitud y aprobación de créditos"""
 
 
 class OpenAIAdapter(EmbeddingPort, LLMPort):
@@ -46,24 +64,39 @@ class OpenAIAdapter(EmbeddingPort, LLMPort):
     # LLMPort implementation
     async def generate_response(self, query: str, context: str) -> str:
         """Generate a response using GPT with RAG context."""
-        system_prompt = """Eres un asistente virtual de KrediPlus, una plataforma financiera digital innovadora dedicada a democratizar el acceso al crédito para pequeñas y medianas empresas (PYMEs) y emprendedores.
-
-Tu objetivo es responder preguntas de los usuarios basándote en el contexto proporcionado.
-
-Reglas:
-- Responde en español de manera clara, amigable y profesional
-- Usa el contexto proporcionado para dar respuestas precisas
-- Si la pregunta es muy general (como "hola", "qué sabes", etc.), presenta brevemente a KrediPlus y ofrece ayuda
-- Si no encuentras información específica en el contexto, puedes dar información general sobre KrediPlus
-- Sé conciso pero completo en tus respuestas
-- Si el usuario pregunta algo completamente fuera del alcance de KrediPlus, redirige amablemente
-
-Información básica de KrediPlus que siempre puedes mencionar:
-- KrediPlus es una plataforma de crédito digital para PYMEs y emprendedores
-- Ofrece acceso rápido y equitativo a crédito
-- Simplifica procesos de solicitud y aprobación de créditos"""
-
-        return await self.generate_response_with_system_prompt(query, context, system_prompt)
+        return await self.generate_response_with_history(query, context, [])
+    
+    async def generate_response_with_history(
+        self,
+        query: str,
+        context: str,
+        history: Optional[List[dict]] = None
+    ) -> str:
+        """Generate a response with conversation history."""
+        try:
+            messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+            
+            # Add conversation history
+            if history:
+                for msg in history:
+                    messages.append({"role": msg["role"], "content": msg["content"]})
+            
+            # Add current question with context
+            messages.append({
+                "role": "user",
+                "content": f"Contexto: {context}\n\nPregunta: {query}"
+            })
+            
+            response = await self.client.chat.completions.create(
+                model=self.chat_model,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=1000
+            )
+            
+            return response.choices[0].message.content or ""
+        except Exception as e:
+            raise Exception(f"Error generating response: {str(e)}")
     
     async def generate_response_with_system_prompt(
         self, 
@@ -75,12 +108,7 @@ Información básica de KrediPlus que siempre puedes mencionar:
         try:
             messages = [
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"""Contexto de documentos:
-{context}
-
-Pregunta del usuario: {query}
-
-Responde basándote en el contexto proporcionado."""}
+                {"role": "user", "content": f"Contexto: {context}\n\nPregunta: {query}"}
             ]
             
             response = await self.client.chat.completions.create(

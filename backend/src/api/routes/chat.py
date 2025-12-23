@@ -44,7 +44,10 @@ async def chat(
     If no relevant information is found, the chatbot will indicate this.
     """
     try:
-        result = await service.process_query(request.query)
+        # Convert history to list of dicts
+        history = [{"role": msg.role, "content": msg.content} for msg in (request.history or [])]
+        
+        result = await service.process_query(request.question, history)
         
         return ChatResponse(
             response=result.response,
