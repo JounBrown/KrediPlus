@@ -28,7 +28,7 @@ export function ChatbotWidget({ onClose }: ChatbotWidgetProps) {
   const canReset = messages.length > 0 && !isSending
 
   return (
-    <div className="fixed bottom-20 right-6 z-50 w-[380px] max-w-[calc(100%-2rem)] rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200">
+    <div className="fixed bottom-20 right-6 z-50 w-[420px] max-w-[calc(100%-2rem)] rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200">
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div>
           <p className="text-sm font-semibold text-[#0d2f62]">Asistente virtual</p>
@@ -38,7 +38,7 @@ export function ChatbotWidget({ onClose }: ChatbotWidgetProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-500 hover:text-[#f26522]"
+            className="h-8 w-8 text-slate-500 hover:bg-[#f26522] hover:text-white"
             onClick={clearChat}
             disabled={!canReset}
             aria-label="Reiniciar conversación"
@@ -48,7 +48,7 @@ export function ChatbotWidget({ onClose }: ChatbotWidgetProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-500 hover:text-[#f26522]"
+            className="h-8 w-8 text-slate-500 hover:bg-[#f26522] hover:text-white"
             onClick={onClose}
             aria-label="Cerrar chatbot"
           >
@@ -96,7 +96,7 @@ export function ChatbotWidget({ onClose }: ChatbotWidgetProps) {
         )}
       </div>
 
-      <form className="border-t bg-white px-4 py-3" onSubmit={handleSubmit}>
+      <form className="rounded-b-3xl border-t bg-white px-4 py-3" onSubmit={handleSubmit}>
         <label className="sr-only" htmlFor="chatbot-message-input">
           Escribe tu mensaje para el chatbot
         </label>

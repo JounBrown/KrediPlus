@@ -13,23 +13,22 @@ function IndexPage() {
 
   return (
     <AppLayout headerActive="home" mainClassName="space-y-16 pb-16">
-      <section id="clientes" className="bg-gradient-to-br from-white via-[#f9fafb] to-[#f7f7f7] pb-10 pt-8">
-          <div className="mx-auto grid max-w-7xl items-start gap-10 px-6 lg:grid-cols-2">
-            <div className="space-y-6">
-              <div className="rounded-2xl bg-[#0d2f62] p-8 text-white shadow-xl">
-                <p className="text-3xl font-extrabold leading-tight">
-                  <span className="text-[#f26522]">Atendemos</span> clientes pensionados y reportados
-                </p>
-                <p className="mt-3 text-sm text-slate-100/90">
-                  Descubre nuestros servicios de libranza hoy mismo y en línea.
-                </p>
-              </div>
+      <section id="clientes" className="bg-gradient-to-br from-white via-[#f9fafb] to-[#f7f7f7] pb-10 pt-2">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-extrabold leading-tight text-[#0d2f62]">
+                Créditos de Libranza para <span className="text-[#f26522]">Pensionados y Reportados</span>
+              </h1>
+              
+              <p className="text-lg text-slate-600">
+                Sin codeudor. Aprobación en 24 horas. Retoma el control de tu vida financiera.
+              </p>
 
-              <div className="overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-slate-200">
+              <div className="flex justify-center">
                 <img
-                  src="https://images.unsplash.com/photo-1508672019048-805c876b67e2?auto=format&fit=crop&w=900&q=80"
-                  alt="Cliente cubierto con manta"
-                  className="h-full w-full object-cover"
+                  src="/oldman.jpeg"
+                  alt="Cliente pensionado"
+                  className="w-full max-w-md h-[505px] rounded-3xl shadow-lg"
                 />
               </div>
             </div>
