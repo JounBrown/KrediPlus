@@ -124,7 +124,7 @@ export function SubmitFormCard({
           <Input id="cedula" name="cedula" placeholder="Número de documento" required />
         </div>
 
-        <div className="space-y-1">
+        {/* <div className="space-y-1">
           <label className="text-sm font-semibold text-slate-700">Convenio</label>
           <Select value={convenio} onValueChange={setConvenio}>
             <SelectTrigger>
@@ -139,7 +139,7 @@ export function SubmitFormCard({
             </SelectContent>
           </Select>
           <input type="hidden" name="convenio" value={convenio ?? ''} />
-        </div>
+        </div> */}
 
         <div className="space-y-1">
           <label className="text-sm font-semibold text-slate-700" htmlFor="telefono">
@@ -152,10 +152,7 @@ export function SubmitFormCard({
           <label className="text-sm font-semibold text-slate-700" htmlFor="fechaNacimiento">
             Fecha de Nacimiento
           </label>
-          <div className="flex items-center gap-2">
-            <Input type="date" id="fecha_nacimiento" name="fecha_nacimiento" className="flex-1" required />
-            <CalendarIcon className="h-5 w-5 text-slate-400" />
-          </div>
+          <Input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required />
         </div>
 
         <div className="flex items-start gap-3 rounded-md bg-slate-50 px-3 py-2">
