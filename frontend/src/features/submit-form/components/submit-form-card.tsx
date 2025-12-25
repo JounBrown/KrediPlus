@@ -129,10 +129,17 @@ export function SubmitFormCard({
         </div>
 
         <div className="space-y-1">
-          <label className="text-sm font-semibold text-slate-700" htmlFor="fechaNacimiento">
+          <label className="text-sm font-semibold text-slate-700" htmlFor="fecha_nacimiento">
             Fecha de Nacimiento
           </label>
-          <Input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required />
+          <Input 
+            type="date" 
+            id="fecha_nacimiento" 
+            name="fecha_nacimiento" 
+            required 
+            max={new Date().toISOString().split('T')[0]}
+            min="1900-01-01"
+          />
         </div>
 
         <div className="flex items-start gap-3 rounded-md bg-slate-50 px-3 py-2">

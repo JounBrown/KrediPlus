@@ -318,7 +318,7 @@ export function CreditSimulator(props: CreditSimulatorProps) {
         </div>
       </div>
 
-      <div className="space-y-6 text-slate-700">
+      <div className="hidden space-y-6 text-slate-700 md:block">
         <div className="relative">
           <div className="absolute inset-10 rounded-full bg-[#0d2f62]/10 blur-3xl" aria-hidden />
           <img

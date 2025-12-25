@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Route } from '@tanstack/react-router'
 import { rootRoute } from './root'
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, CheckCircle2 } from 'lucide-react'
 import { CreditSimulator } from '@/features/simulator/components/credit-simulator'
 import { defaultSimulatorConfig } from '@/data/simulator-config'
 import { SubmitFormCard } from '@/features/submit-form/components/submit-form-card'
@@ -13,52 +13,45 @@ function IndexPage() {
 
   return (
     <AppLayout headerActive="home" mainClassName="space-y-16 pb-16">
-      <section id="clientes" className="bg-gradient-to-br from-white via-[#f9fafb] to-[#f7f7f7] pb-10 pt-2">
-          {/* Mobile: Imagen de fondo con overlay */}
-          <div className="relative lg:hidden">
-            <div className="absolute inset-0">
-              <img
-                src="/oldman.jpeg"
-                alt="Cliente pensionado"
-                className="h-full w-full object-cover object-[center_20%]"
-              />
-              <div className="absolute inset-0 bg-[#0d2f62]/70" />
-            </div>
-            <div className="relative px-6 py-12 text-center">
-              <h1 className="text-3xl font-extrabold leading-tight text-white">
-                Créditos de Libranza para <span className="text-[#f26522]">Pensionados y Reportados</span>
-              </h1>
-            </div>
-          </div>
-
-          {/* Mobile: Formulario */}
-          <div className="px-6 pt-6 lg:hidden">
-            <SubmitFormCard />
-          </div>
-
-          {/* Desktop: Layout original */}
-          <div className="mx-auto hidden max-w-7xl items-center gap-12 px-6 lg:grid lg:grid-cols-2">
-            <div className="space-y-2">
-              <h1 className="text-4xl font-extrabold leading-tight text-[#0d2f62]">
-                Créditos de Libranza para <span className="text-[#f26522]">Pensionados y Reportados</span>
+      {/* Hero Section - Split Layout */}
+      <section id="clientes" className="bg-gradient-to-br from-[#0d2f62] to-[#1a4a8a] py-12 lg:py-20">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-10 lg:grid-cols-[1.1fr,1fr] lg:items-center lg:gap-16">
+            {/* Contenido */}
+            <div className="space-y-6 text-center lg:text-left">
+              <h1 className="text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
+                Créditos de Libranza para{' '}
+                <span className="text-[#f26522]">Pensionados y Reportados</span>
               </h1>
               
-              <p className="text-lg text-slate-600">
+              <p className="text-lg text-slate-200 lg:text-xl">
                 Sin codeudor. Aprobación en 24 horas. Retoma el control de tu vida financiera.
               </p>
 
-              <div className="flex justify-center">
-                <img
-                  src="/oldman.jpeg"
-                  alt="Cliente pensionado"
-                  className="w-full max-w-md h-[505px] rounded-3xl shadow-lg"
-                />
+              {/* Trust Signals */}
+              <div className="flex flex-wrap justify-center gap-4 pt-2 lg:justify-start">
+                <div className="flex items-center gap-2 text-sm text-white/90">
+                  <CheckCircle2 className="h-5 w-5 text-[#f26522]" />
+                  <span>+500 clientes satisfechos</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-white/90">
+                  <CheckCircle2 className="h-5 w-5 text-[#f26522]" />
+                  <span>Hasta 140 millones</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-white/90">
+                  <CheckCircle2 className="h-5 w-5 text-[#f26522]" />
+                  <span>Hasta 180 meses</span>
+                </div>
               </div>
             </div>
 
-            <SubmitFormCard />
+            {/* Formulario */}
+            <div>
+              <SubmitFormCard />
+            </div>
           </div>
-        </section>
+        </div>
+      </section>
 
         <section id="condiciones" className="scroll-mt-20 bg-white py-14 shadow-sm">
           {/* Mobile: Imagen con overlay */}
@@ -155,7 +148,7 @@ function IndexPage() {
           </div>
         </section>
 
-        <section id="simulador" className="scroll-mt-20 px-6">
+        <section id="simulador" className="scroll-mt-20 bg-gradient-to-br from-[#0d2f62] to-[#1a4a8a] py-14 px-6">
           <CreditSimulator
             minAmount={defaultSimulatorConfig.montoMinimo}
             maxAmount={defaultSimulatorConfig.montoMaximo}
