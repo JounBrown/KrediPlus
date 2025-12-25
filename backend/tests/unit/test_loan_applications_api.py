@@ -601,7 +601,7 @@ class TestLoanApplicationWorkflows:
         assert update_result.telefono == "3009999999"
         
         # Step 4: Delete
-        with patch('src.infrastructure.adapters.database.loan_application_repository.SupabaseLoanApplicationRepository') as mock_repo_class:
+        with patch('src.infrastructure.outbound.database.loan_application_repository.SupabaseLoanApplicationRepository') as mock_repo_class:
             mock_repo = AsyncMock()
             mock_repo.delete.return_value = True
             mock_repo_class.return_value = mock_repo

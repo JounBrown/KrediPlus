@@ -167,7 +167,7 @@ class TestListCredits:
         mock_db = AsyncMock(spec=AsyncSession)
         
         # Mock credit models
-        from src.infrastructure.adapters.database.models import CreditModel
+        from src.infrastructure.outbound.database.models import CreditModel
         mock_credit_models = [
             CreditModel(
                 id=1,
@@ -196,7 +196,7 @@ class TestListCredits:
         mock_db.execute.return_value = mock_result
         
         # Act & Assert
-        with patch('src.infrastructure.adapters.database.credit_repository.SupabaseCreditRepository') as mock_repo_class:
+        with patch('src.infrastructure.outbound.database.credit_repository.SupabaseCreditRepository') as mock_repo_class:
             mock_repo = AsyncMock()
             
             # Mock the _model_to_entity method for each credit
@@ -459,7 +459,7 @@ class TestDeleteCreditDocument:
         
         # Act & Assert
         with patch('src.application.services.client_document_service.ClientDocumentService') as mock_service_class, \
-             patch('src.infrastructure.adapters.database.client_document_repository.SupabaseClientDocumentRepository') as mock_repo_class:
+             patch('src.infrastructure.outbound.database.client_document_repository.SupabaseClientDocumentRepository') as mock_repo_class:
             
             mock_service = AsyncMock()
             mock_service.delete_credit_document.return_value = expected_result
@@ -480,7 +480,7 @@ class TestDeleteCreditDocument:
         
         # Act & Assert
         with patch('src.application.services.client_document_service.ClientDocumentService') as mock_service_class, \
-             patch('src.infrastructure.adapters.database.client_document_repository.SupabaseClientDocumentRepository'):
+             patch('src.infrastructure.outbound.database.client_document_repository.SupabaseClientDocumentRepository'):
             
             mock_service = AsyncMock()
             mock_service.delete_credit_document.side_effect = ValueError("Document not found")
@@ -502,7 +502,7 @@ class TestDeleteCreditDocument:
         
         # Act & Assert
         with patch('src.application.services.client_document_service.ClientDocumentService') as mock_service_class, \
-             patch('src.infrastructure.adapters.database.client_document_repository.SupabaseClientDocumentRepository'):
+             patch('src.infrastructure.outbound.database.client_document_repository.SupabaseClientDocumentRepository'):
             
             mock_service = AsyncMock()
             mock_service.delete_credit_document.side_effect = Exception("Database error")

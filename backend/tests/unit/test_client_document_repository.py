@@ -2,8 +2,8 @@
 import pytest
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
-from src.infrastructure.adapters.database.client_document_repository import SupabaseClientDocumentRepository
-from src.infrastructure.adapters.database.models import ClientDocumentModel, DocumentTypeEnum
+from src.infrastructure.outbound.database.client_document_repository import SupabaseClientDocumentRepository
+from src.infrastructure.outbound.database.models import ClientDocumentModel, DocumentTypeEnum
 from src.domain.entities.client_document import ClientDocument, DocumentType
 
 

@@ -5,8 +5,8 @@ from typing import Optional, List, Union
 from src.infrastructure.inbound.api.middleware.auth_middleware import get_current_user
 from src.application.services.client_document_service import ClientDocumentService
 from src.application.dtos.client_document_dtos import ClientDocumentResponse
-from src.infrastructure.adapters.database.connection import get_db_session
-from src.infrastructure.adapters.database.client_document_repository import SupabaseClientDocumentRepository
+from src.infrastructure.outbound.database.connection import get_db_session
+from src.infrastructure.outbound.database.client_document_repository import SupabaseClientDocumentRepository
 
 router = APIRouter(
     prefix="/documents",

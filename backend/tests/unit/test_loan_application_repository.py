@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import date, datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.infrastructure.adapters.database.loan_application_repository import SupabaseLoanApplicationRepository
-from src.infrastructure.adapters.database.models import ApplicationModel
+from src.infrastructure.outbound.database.loan_application_repository import SupabaseLoanApplicationRepository
+from src.infrastructure.outbound.database.models import ApplicationModel
 from src.domain.entities.loan_application import LoanApplication
 
 

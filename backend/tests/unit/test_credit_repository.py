@@ -7,8 +7,8 @@ from datetime import date, datetime
 from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.infrastructure.adapters.database.credit_repository import SupabaseCreditRepository
-from src.infrastructure.adapters.database.models import CreditModel, EstadoCreditoEnum
+from src.infrastructure.outbound.database.credit_repository import SupabaseCreditRepository
+from src.infrastructure.outbound.database.models import CreditModel, EstadoCreditoEnum
 from src.domain.entities.credit import Credit, CreditStatus
 
 

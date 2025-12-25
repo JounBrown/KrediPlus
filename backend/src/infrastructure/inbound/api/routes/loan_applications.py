@@ -12,9 +12,9 @@ from src.application.dtos.loan_application_dtos import (
     LoanApplicationListResponse,
     LoanApplicationStatsResponse
 )
-from src.infrastructure.adapters.database.connection import get_db_session
+from src.infrastructure.outbound.database.connection import get_db_session
 from src.domain.entities.user import User
-from src.infrastructure.adapters.database.loan_application_repository import SupabaseLoanApplicationRepository
+from src.infrastructure.outbound.database.loan_application_repository import SupabaseLoanApplicationRepository
 
 router = APIRouter(prefix="/loan_applications", tags=["Loan Applications"])
 

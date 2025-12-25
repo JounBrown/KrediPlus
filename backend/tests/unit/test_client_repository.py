@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import date, datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.infrastructure.adapters.database.client_repository import SupabaseClientRepository
-from src.infrastructure.adapters.database.models import ClientModel
+from src.infrastructure.outbound.database.client_repository import SupabaseClientRepository
+from src.infrastructure.outbound.database.models import ClientModel
 from src.domain.entities.client import Client
 
 

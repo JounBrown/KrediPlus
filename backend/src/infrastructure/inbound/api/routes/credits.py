@@ -9,8 +9,8 @@ from src.application.dtos.credit_dtos import (
     UpdateCreditRequest,
     CreditResponse
 )
-from src.infrastructure.adapters.database.connection import get_db_session
-from src.infrastructure.adapters.database.credit_repository import SupabaseCreditRepository
+from src.infrastructure.outbound.database.connection import get_db_session
+from src.infrastructure.outbound.database.credit_repository import SupabaseCreditRepository
 
 router = APIRouter(
     prefix="/credits",
@@ -73,7 +73,7 @@ async def list_credits(
     """List all credits"""
     try:
         # Usar directamente el repositorio sin límites
-        from src.infrastructure.adapters.database.models import CreditModel
+        from src.infrastructure.outbound.database.models import CreditModel
         from sqlalchemy import select
         
         stmt = select(CreditModel).order_by(CreditModel.created_at.desc())
@@ -183,7 +183,7 @@ async def delete_credit_document(
     """
     try:
         from src.application.services.client_document_service import ClientDocumentService
-        from src.infrastructure.adapters.database.client_document_repository import SupabaseClientDocumentRepository
+        from src.infrastructure.outbound.database.client_document_repository import SupabaseClientDocumentRepository
         
         # Create document service
         document_repository = SupabaseClientDocumentRepository(db)

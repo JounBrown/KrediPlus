@@ -12,8 +12,8 @@ from src.application.dtos.client_dtos import (
 )
 from src.application.dtos.credit_dtos import CreateCreditForClientRequest, CreditResponse, UpdateCreditRequest
 from src.infrastructure.inbound.api.middleware.auth_middleware import get_current_user
-from src.infrastructure.adapters.database.connection import get_db_session
-from src.infrastructure.adapters.database.client_repository import SupabaseClientRepository
+from src.infrastructure.outbound.database.connection import get_db_session
+from src.infrastructure.outbound.database.client_repository import SupabaseClientRepository
 
 router = APIRouter(
     prefix="/clients",
@@ -76,7 +76,7 @@ async def list_clients(
     """List all clients"""
     try:
         # Usar directamente el repositorio sin límites
-        from src.infrastructure.adapters.database.client_repository import SupabaseClientRepository
+        from src.infrastructure.outbound.database.client_repository import SupabaseClientRepository
         repository = SupabaseClientRepository(db)
         
         # Obtener todos los clientes sin límite
@@ -179,8 +179,8 @@ async def search_clients_by_name(
     try:
         # Buscar por nombre SIN LÍMITE - consulta directa
         from sqlalchemy import select
-        from src.infrastructure.adapters.database.models import ClientModel
-        from src.infrastructure.adapters.database.client_repository import SupabaseClientRepository
+        from src.infrastructure.outbound.database.models import ClientModel
+        from src.infrastructure.outbound.database.client_repository import SupabaseClientRepository
         
         repository = SupabaseClientRepository(db)
         search_pattern = f"%{name}%"
@@ -235,7 +235,7 @@ async def delete_client_document(
     """
     try:
         from src.application.services.client_document_service import ClientDocumentService
-        from src.infrastructure.adapters.database.client_document_repository import SupabaseClientDocumentRepository
+        from src.infrastructure.outbound.database.client_document_repository import SupabaseClientDocumentRepository
         
         # Create document service
         document_repository = SupabaseClientDocumentRepository(db)
@@ -276,7 +276,7 @@ async def create_credit_for_client(
     try:
         from src.application.services.credit_service import CreditService
         from src.application.dtos.credit_dtos import CreateCreditRequest
-        from src.infrastructure.adapters.database.credit_repository import SupabaseCreditRepository
+        from src.infrastructure.outbound.database.credit_repository import SupabaseCreditRepository
         
         # First verify that client exists
         client_service = get_client_service(db)
@@ -337,7 +337,7 @@ async def update_client_credit(
     """
     try:
         from src.application.services.credit_service import CreditService
-        from src.infrastructure.adapters.database.credit_repository import SupabaseCreditRepository
+        from src.infrastructure.outbound.database.credit_repository import SupabaseCreditRepository
         
         # First verify that client exists
         client_service = get_client_service(db)

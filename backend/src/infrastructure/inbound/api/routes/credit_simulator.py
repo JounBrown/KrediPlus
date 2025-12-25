@@ -9,9 +9,9 @@ from src.application.dtos.credit_simulator_dtos import (
     CreateSimulatorConfigRequest,
     UpdateSimulatorConfigRequest
 )
-from src.infrastructure.adapters.database.connection import get_db_session
+from src.infrastructure.outbound.database.connection import get_db_session
 from src.domain.entities.user import User
-from src.infrastructure.adapters.database.credit_simulator_repository import SupabaseCreditSimulatorRepository
+from src.infrastructure.outbound.database.credit_simulator_repository import SupabaseCreditSimulatorRepository
 
 router = APIRouter(
     prefix="/simulator",

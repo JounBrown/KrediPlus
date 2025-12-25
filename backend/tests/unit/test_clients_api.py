@@ -348,7 +348,7 @@ class TestCreateCreditForClient:
         # Act & Assert with patches
         with patch('src.infrastructure.inbound.api.routes.clients.get_client_service') as mock_get_client_service, \
              patch('src.application.services.credit_service.CreditService') as mock_credit_service_class, \
-             patch('src.infrastructure.adapters.database.credit_repository.SupabaseCreditRepository') as mock_credit_repo:
+             patch('src.infrastructure.outbound.database.credit_repository.SupabaseCreditRepository') as mock_credit_repo:
             
             # Setup client service mock
             mock_client_service = AsyncMock()
@@ -431,7 +431,7 @@ class TestListClients:
         ]
         
         # Act & Assert
-        with patch('src.infrastructure.adapters.database.client_repository.SupabaseClientRepository') as mock_repo_class:
+        with patch('src.infrastructure.outbound.database.client_repository.SupabaseClientRepository') as mock_repo_class:
             mock_repo = AsyncMock()
             mock_repo.get_all.return_value = mock_clients
             mock_repo_class.return_value = mock_repo
@@ -472,7 +472,7 @@ class TestDeleteClientDocument:
         
         # Act & Assert
         with patch('src.application.services.client_document_service.ClientDocumentService') as mock_service_class, \
-             patch('src.infrastructure.adapters.database.client_document_repository.SupabaseClientDocumentRepository') as mock_repo_class:
+             patch('src.infrastructure.outbound.database.client_document_repository.SupabaseClientDocumentRepository') as mock_repo_class:
             
             mock_service = AsyncMock()
             mock_service.delete_client_document.return_value = expected_result
@@ -493,7 +493,7 @@ class TestDeleteClientDocument:
         
         # Act & Assert
         with patch('src.application.services.client_document_service.ClientDocumentService') as mock_service_class, \
-             patch('src.infrastructure.adapters.database.client_document_repository.SupabaseClientDocumentRepository'):
+             patch('src.infrastructure.outbound.database.client_document_repository.SupabaseClientDocumentRepository'):
             
             mock_service = AsyncMock()
             mock_service.delete_client_document.side_effect = ValueError("Document not found")
@@ -561,7 +561,7 @@ class TestUpdateClientCredit:
         # Act & Assert
         with patch('src.infrastructure.inbound.api.routes.clients.get_client_service') as mock_get_client_service, \
              patch('src.application.services.credit_service.CreditService') as mock_credit_service_class, \
-             patch('src.infrastructure.adapters.database.credit_repository.SupabaseCreditRepository'):
+             patch('src.infrastructure.outbound.database.credit_repository.SupabaseCreditRepository'):
             
             # Setup client service mock
             mock_client_service = AsyncMock()
@@ -619,7 +619,7 @@ class TestUpdateClientCredit:
         # Act & Assert
         with patch('src.infrastructure.inbound.api.routes.clients.get_client_service') as mock_get_client_service, \
              patch('src.application.services.credit_service.CreditService') as mock_credit_service_class, \
-             patch('src.infrastructure.adapters.database.credit_repository.SupabaseCreditRepository'):
+             patch('src.infrastructure.outbound.database.credit_repository.SupabaseCreditRepository'):
             
             mock_client_service = AsyncMock()
             mock_client_service.get_client_by_id.return_value = expected_client
