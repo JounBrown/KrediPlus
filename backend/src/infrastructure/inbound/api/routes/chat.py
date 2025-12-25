@@ -5,7 +5,7 @@ from src.application.services.chat_service import ChatService
 from src.application.dtos.chat_dtos import ChatRequest, ChatResponse, ChunkReferenceDto
 from src.infrastructure.adapters.database.connection import get_db_session
 from src.infrastructure.adapters.database.chunk_repository import SupabaseChunkRepository
-from src.infrastructure.adapters.openai_adapter import OpenAIAdapter
+from src.infrastructure.outbound.openai_adapter import OpenAIAdapter
 
 # PUBLIC router - NO authentication required
 router = APIRouter(

@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi import UploadFile
 from src.domain.entities.client_document import ClientDocument, DocumentType
 from src.domain.ports.client_document_repository import ClientDocumentRepositoryPort
-from src.infrastructure.adapters.storage.supabase_storage_service import SupabaseStorageService
+from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
 from src.application.dtos.client_document_dtos import (
     CreateClientDocumentRequest,
     UpdateClientDocumentRequest,

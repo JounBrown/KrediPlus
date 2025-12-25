@@ -12,8 +12,8 @@ class TestSupabaseStorageService:
 
     @pytest.fixture
     def service(self, mock_supabase_client):
-        with patch('src.infrastructure.adapters.storage.supabase_storage_service.create_client', return_value=mock_supabase_client):
-            from src.infrastructure.adapters.storage.supabase_storage_service import SupabaseStorageService
+        with patch('src.infrastructure.outbound.supabase_storage_service.create_client', return_value=mock_supabase_client):
+            from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
             svc = SupabaseStorageService()
             svc.supabase = mock_supabase_client
             return svc
@@ -24,8 +24,8 @@ class TestGenerateUniqueFilename:
 
     @pytest.fixture
     def service(self):
-        with patch('src.infrastructure.adapters.storage.supabase_storage_service.create_client'):
-            from src.infrastructure.adapters.storage.supabase_storage_service import SupabaseStorageService
+        with patch('src.infrastructure.outbound.supabase_storage_service.create_client'):
+            from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
             return SupabaseStorageService()
 
     def test_generate_filename_with_extension(self, service):
@@ -62,8 +62,8 @@ class TestBuildStoragePath:
 
     @pytest.fixture
     def service(self):
-        with patch('src.infrastructure.adapters.storage.supabase_storage_service.create_client'):
-            from src.infrastructure.adapters.storage.supabase_storage_service import SupabaseStorageService
+        with patch('src.infrastructure.outbound.supabase_storage_service.create_client'):
+            from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
             return SupabaseStorageService()
 
     def test_build_storage_path(self, service):
@@ -84,10 +84,10 @@ class TestUploadFile:
 
     @pytest.fixture
     def service(self):
-        with patch('src.infrastructure.adapters.storage.supabase_storage_service.create_client') as mock_create:
+        with patch('src.infrastructure.outbound.supabase_storage_service.create_client') as mock_create:
             mock_client = MagicMock()
             mock_create.return_value = mock_client
-            from src.infrastructure.adapters.storage.supabase_storage_service import SupabaseStorageService
+            from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
             svc = SupabaseStorageService()
             return svc, mock_client
 
@@ -143,10 +143,10 @@ class TestDeleteFile:
 
     @pytest.fixture
     def service(self):
-        with patch('src.infrastructure.adapters.storage.supabase_storage_service.create_client') as mock_create:
+        with patch('src.infrastructure.outbound.supabase_storage_service.create_client') as mock_create:
             mock_client = MagicMock()
             mock_create.return_value = mock_client
-            from src.infrastructure.adapters.storage.supabase_storage_service import SupabaseStorageService
+            from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
             svc = SupabaseStorageService()
             return svc, mock_client
 
@@ -185,10 +185,10 @@ class TestGetPublicUrl:
 
     @pytest.fixture
     def service(self):
-        with patch('src.infrastructure.adapters.storage.supabase_storage_service.create_client') as mock_create:
+        with patch('src.infrastructure.outbound.supabase_storage_service.create_client') as mock_create:
             mock_client = MagicMock()
             mock_create.return_value = mock_client
-            from src.infrastructure.adapters.storage.supabase_storage_service import SupabaseStorageService
+            from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
             svc = SupabaseStorageService()
             return svc, mock_client
 
@@ -225,10 +225,10 @@ class TestCreateSignedUrl:
 
     @pytest.fixture
     def service(self):
-        with patch('src.infrastructure.adapters.storage.supabase_storage_service.create_client') as mock_create:
+        with patch('src.infrastructure.outbound.supabase_storage_service.create_client') as mock_create:
             mock_client = MagicMock()
             mock_create.return_value = mock_client
-            from src.infrastructure.adapters.storage.supabase_storage_service import SupabaseStorageService
+            from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
             svc = SupabaseStorageService()
             return svc, mock_client
 

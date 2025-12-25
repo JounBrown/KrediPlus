@@ -13,7 +13,7 @@ from src.application.dtos.rag_document_dtos import (
 from src.infrastructure.adapters.database.connection import get_db_session
 from src.infrastructure.adapters.database.context_document_repository import SupabaseContextDocumentRepository
 from src.infrastructure.adapters.database.chunk_repository import SupabaseChunkRepository
-from src.infrastructure.adapters.openai_adapter import OpenAIAdapter
+from src.infrastructure.outbound.openai_adapter import OpenAIAdapter
 
 router = APIRouter(
     prefix="/rag/documents",

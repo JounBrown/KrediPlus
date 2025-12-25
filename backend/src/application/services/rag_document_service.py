@@ -6,7 +6,7 @@ from src.domain.entities.chunk import Chunk
 from src.domain.ports.context_document_repository import ContextDocumentRepositoryPort
 from src.domain.ports.chunk_repository import ChunkRepositoryPort
 from src.domain.ports.embedding_port import EmbeddingPort
-from src.infrastructure.adapters.storage.supabase_storage_service import SupabaseStorageService
+from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
 from src.application.services.document_processors.factory import DocumentProcessorFactory
 from src.application.services.text_chunking_service import TextChunkingService
 

@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
 import httpx
 
-from src.infrastructure.adapters.supabase_auth_adapter import SupabaseAuthAdapter
+from src.infrastructure.outbound.supabase_auth_adapter import SupabaseAuthAdapter
 from src.domain.entities.user import User
 
 
@@ -17,9 +17,9 @@ class TestSupabaseAuthAdapter:
     def setup_method(self):
         """Setup test fixtures"""
         # Mock configuration values
-        with patch('src.infrastructure.adapters.supabase_auth_adapter.SUPABASE_URL', 'https://test.supabase.co'), \
-             patch('src.infrastructure.adapters.supabase_auth_adapter.SUPABASE_SERVICE_KEY', 'test_service_key'), \
-             patch('src.infrastructure.adapters.supabase_auth_adapter.SUPABASE_JWT_SECRET', 'test_jwt_secret'):
+        with patch('src.infrastructure.outbound.supabase_auth_adapter.SUPABASE_URL', 'https://test.supabase.co'), \
+             patch('src.infrastructure.outbound.supabase_auth_adapter.SUPABASE_SERVICE_KEY', 'test_service_key'), \
+             patch('src.infrastructure.outbound.supabase_auth_adapter.SUPABASE_JWT_SECRET', 'test_jwt_secret'):
             
             self.adapter = SupabaseAuthAdapter()
         
@@ -279,9 +279,9 @@ class TestAuthAdapterConfiguration(TestSupabaseAuthAdapter):
     def test_adapter_initialization_with_config(self):
         """Test adapter initialization with configuration"""
         # Arrange & Act
-        with patch('src.infrastructure.adapters.supabase_auth_adapter.SUPABASE_URL', 'https://custom.supabase.co'), \
-             patch('src.infrastructure.adapters.supabase_auth_adapter.SUPABASE_SERVICE_KEY', 'custom_service_key'), \
-             patch('src.infrastructure.adapters.supabase_auth_adapter.SUPABASE_JWT_SECRET', 'custom_jwt_secret'):
+        with patch('src.infrastructure.outbound.supabase_auth_adapter.SUPABASE_URL', 'https://custom.supabase.co'), \
+             patch('src.infrastructure.outbound.supabase_auth_adapter.SUPABASE_SERVICE_KEY', 'custom_service_key'), \
+             patch('src.infrastructure.outbound.supabase_auth_adapter.SUPABASE_JWT_SECRET', 'custom_jwt_secret'):
             
             adapter = SupabaseAuthAdapter()
         
@@ -293,9 +293,9 @@ class TestAuthAdapterConfiguration(TestSupabaseAuthAdapter):
     def test_adapter_initialization_without_config(self):
         """Test adapter initialization without configuration"""
         # Arrange & Act
-        with patch('src.infrastructure.adapters.supabase_auth_adapter.SUPABASE_URL', None), \
-             patch('src.infrastructure.adapters.supabase_auth_adapter.SUPABASE_SERVICE_KEY', None), \
-             patch('src.infrastructure.adapters.supabase_auth_adapter.SUPABASE_JWT_SECRET', None):
+        with patch('src.infrastructure.outbound.supabase_auth_adapter.SUPABASE_URL', None), \
+             patch('src.infrastructure.outbound.supabase_auth_adapter.SUPABASE_SERVICE_KEY', None), \
+             patch('src.infrastructure.outbound.supabase_auth_adapter.SUPABASE_JWT_SECRET', None):
             
             adapter = SupabaseAuthAdapter()
         

@@ -2,7 +2,7 @@ from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
 from src.application.services.auth_service import AuthService
-from src.infrastructure.adapters.supabase_auth_adapter import SupabaseAuthAdapter
+from src.infrastructure.outbound.supabase_auth_adapter import SupabaseAuthAdapter
 from src.domain.entities.user import User
 
 # Configuración del esquema de seguridad
