@@ -3,9 +3,10 @@ import os
 from typing import Optional, Tuple
 from supabase import create_client, Client
 from src.config import SUPABASE_URL, SUPABASE_SERVICE_KEY
+from src.domain.ports.storage_port import StoragePort
 
 
-class SupabaseStorageService:
+class SupabaseStorageService(StoragePort):
     """Service for handling file uploads to Supabase Storage"""
     
     def __init__(self):

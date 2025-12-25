@@ -14,6 +14,7 @@ from src.infrastructure.outbound.database.connection import get_db_session
 from src.infrastructure.outbound.database.context_document_repository import SupabaseContextDocumentRepository
 from src.infrastructure.outbound.database.chunk_repository import SupabaseChunkRepository
 from src.infrastructure.outbound.openai_adapter import OpenAIAdapter
+from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
 
 router = APIRouter(
     prefix="/rag/documents",
@@ -27,7 +28,8 @@ def get_rag_document_service(db: AsyncSession = Depends(get_db_session)) -> RAGD
     document_repository = SupabaseContextDocumentRepository(db)
     chunk_repository = SupabaseChunkRepository(db)
     embedding_port = OpenAIAdapter()
-    return RAGDocumentService(document_repository, chunk_repository, embedding_port)
+    storage_service = SupabaseStorageService()
+    return RAGDocumentService(document_repository, chunk_repository, embedding_port, storage_service)
 
 
 @router.post("/", response_model=DocumentUploadResponse)

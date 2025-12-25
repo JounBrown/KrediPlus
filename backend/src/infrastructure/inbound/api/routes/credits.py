@@ -184,10 +184,12 @@ async def delete_credit_document(
     try:
         from src.application.services.client_document_service import ClientDocumentService
         from src.infrastructure.outbound.database.client_document_repository import SupabaseClientDocumentRepository
+        from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
         
         # Create document service
         document_repository = SupabaseClientDocumentRepository(db)
-        document_service = ClientDocumentService(document_repository)
+        storage_service = SupabaseStorageService()
+        document_service = ClientDocumentService(document_repository, storage_service)
         
         # Delete document with credit validation
         return await document_service.delete_credit_document(credit_id, document_id)

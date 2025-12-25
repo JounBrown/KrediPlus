@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi import UploadFile
 from src.domain.entities.client_document import ClientDocument, DocumentType
 from src.domain.ports.client_document_repository import ClientDocumentRepositoryPort
-from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
+from src.domain.ports.storage_port import StoragePort
 from src.application.dtos.client_document_dtos import (
     CreateClientDocumentRequest,
     UpdateClientDocumentRequest,
@@ -13,9 +13,9 @@ from src.application.dtos.client_document_dtos import (
 class ClientDocumentService:
     """Service for client document operations"""
     
-    def __init__(self, document_repository: ClientDocumentRepositoryPort):
+    def __init__(self, document_repository: ClientDocumentRepositoryPort, storage_service: StoragePort):
         self._document_repository = document_repository
-        self._storage_service = SupabaseStorageService()
+        self._storage_service = storage_service
     
     async def upload_document(
         self,

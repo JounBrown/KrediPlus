@@ -6,7 +6,7 @@ from src.domain.entities.chunk import Chunk
 from src.domain.ports.context_document_repository import ContextDocumentRepositoryPort
 from src.domain.ports.chunk_repository import ChunkRepositoryPort
 from src.domain.ports.embedding_port import EmbeddingPort
-from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
+from src.domain.ports.storage_port import StoragePort
 from src.application.services.document_processors.factory import DocumentProcessorFactory
 from src.application.services.text_chunking_service import TextChunkingService
 
@@ -18,12 +18,13 @@ class RAGDocumentService:
         self,
         document_repository: ContextDocumentRepositoryPort,
         chunk_repository: ChunkRepositoryPort,
-        embedding_port: EmbeddingPort
+        embedding_port: EmbeddingPort,
+        storage_service: StoragePort
     ):
         self._document_repository = document_repository
         self._chunk_repository = chunk_repository
         self._embedding_port = embedding_port
-        self._storage_service = SupabaseStorageService()
+        self._storage_service = storage_service
         self._processor_factory = DocumentProcessorFactory()
         self._chunking_service = TextChunkingService()
     

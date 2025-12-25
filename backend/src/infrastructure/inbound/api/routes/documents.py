@@ -7,6 +7,7 @@ from src.application.services.client_document_service import ClientDocumentServi
 from src.application.dtos.client_document_dtos import ClientDocumentResponse
 from src.infrastructure.outbound.database.connection import get_db_session
 from src.infrastructure.outbound.database.client_document_repository import SupabaseClientDocumentRepository
+from src.infrastructure.outbound.supabase_storage_service import SupabaseStorageService
 
 router = APIRouter(
     prefix="/documents",
@@ -18,7 +19,8 @@ router = APIRouter(
 def get_document_service(db: AsyncSession = Depends(get_db_session)) -> ClientDocumentService:
     """Dependency to get ClientDocumentService"""
     repository = SupabaseClientDocumentRepository(db)
-    return ClientDocumentService(repository)
+    storage_service = SupabaseStorageService()
+    return ClientDocumentService(repository, storage_service)
 
 
 def parse_optional_int(value: str) -> Optional[int]:

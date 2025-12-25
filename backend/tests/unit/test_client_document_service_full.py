@@ -15,11 +15,9 @@ class TestClientDocumentServiceFull:
     def setup_method(self):
         """Setup test fixtures"""
         self.mock_repository = MagicMock()
+        self.mock_storage = MagicMock()
         
-        # Patch the storage service
-        with patch('src.application.services.client_document_service.SupabaseStorageService'):
-            self.service = ClientDocumentService(self.mock_repository)
-            self.service._storage_service = MagicMock()
+        self.service = ClientDocumentService(self.mock_repository, self.mock_storage)
         
         self.sample_document = ClientDocument(
             id=1,
