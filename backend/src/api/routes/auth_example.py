@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from typing import Optional
-from src.api.middleware.auth_middleware import (
+from src.infrastructure.inbound.api.middleware.auth_middleware import (
     get_current_user, 
     get_current_user_optional, 
     require_admin

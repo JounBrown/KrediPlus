@@ -11,7 +11,7 @@ from src.application.dtos.client_dtos import (
     SearchClientsRequest
 )
 from src.application.dtos.credit_dtos import CreateCreditForClientRequest, CreditResponse, UpdateCreditRequest
-from src.api.middleware.auth_middleware import get_current_user
+from src.infrastructure.inbound.api.middleware.auth_middleware import get_current_user
 from src.infrastructure.adapters.database.connection import get_db_session
 from src.infrastructure.adapters.database.client_repository import SupabaseClientRepository
 

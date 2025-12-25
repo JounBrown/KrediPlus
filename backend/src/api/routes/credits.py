@@ -2,7 +2,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.middleware.auth_middleware import get_current_user
+from src.infrastructure.inbound.api.middleware.auth_middleware import get_current_user
 from src.application.services.credit_service import CreditService
 from src.application.dtos.credit_dtos import (
     CreateCreditRequest,

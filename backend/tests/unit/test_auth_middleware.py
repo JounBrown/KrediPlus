@@ -34,8 +34,8 @@ class TestGetCurrentUser:
         mock_credentials = MagicMock()
         mock_credentials.credentials = "valid_token"
 
-        with patch('src.api.middleware.auth_middleware._auth_service', mock_auth_service):
-            from src.api.middleware.auth_middleware import get_current_user
+        with patch('src.infrastructure.inbound.api.middleware.auth_middleware._auth_service', mock_auth_service):
+            from src.infrastructure.inbound.api.middleware.auth_middleware import get_current_user
             result = await get_current_user(mock_credentials)
 
         assert result.id == "user-123"
@@ -48,8 +48,8 @@ class TestGetCurrentUser:
         mock_credentials = MagicMock()
         mock_credentials.credentials = "invalid_token"
 
-        with patch('src.api.middleware.auth_middleware._auth_service', mock_auth_service):
-            from src.api.middleware.auth_middleware import get_current_user
+        with patch('src.infrastructure.inbound.api.middleware.auth_middleware._auth_service', mock_auth_service):
+            from src.infrastructure.inbound.api.middleware.auth_middleware import get_current_user
             with pytest.raises(HTTPException) as exc_info:
                 await get_current_user(mock_credentials)
 
@@ -78,8 +78,8 @@ class TestGetCurrentUserOptional:
         mock_credentials = MagicMock()
         mock_credentials.credentials = "valid_token"
 
-        with patch('src.api.middleware.auth_middleware._auth_service', mock_auth_service):
-            from src.api.middleware.auth_middleware import get_current_user_optional
+        with patch('src.infrastructure.inbound.api.middleware.auth_middleware._auth_service', mock_auth_service):
+            from src.infrastructure.inbound.api.middleware.auth_middleware import get_current_user_optional
             result = await get_current_user_optional(mock_credentials)
 
         assert result is not None
@@ -87,8 +87,8 @@ class TestGetCurrentUserOptional:
 
     async def test_get_current_user_optional_no_credentials(self, mock_auth_service):
         """Test optional auth without credentials"""
-        with patch('src.api.middleware.auth_middleware._auth_service', mock_auth_service):
-            from src.api.middleware.auth_middleware import get_current_user_optional
+        with patch('src.infrastructure.inbound.api.middleware.auth_middleware._auth_service', mock_auth_service):
+            from src.infrastructure.inbound.api.middleware.auth_middleware import get_current_user_optional
             result = await get_current_user_optional(None)
 
         assert result is None
@@ -100,8 +100,8 @@ class TestGetCurrentUserOptional:
         mock_credentials = MagicMock()
         mock_credentials.credentials = "invalid_token"
 
-        with patch('src.api.middleware.auth_middleware._auth_service', mock_auth_service):
-            from src.api.middleware.auth_middleware import get_current_user_optional
+        with patch('src.infrastructure.inbound.api.middleware.auth_middleware._auth_service', mock_auth_service):
+            from src.infrastructure.inbound.api.middleware.auth_middleware import get_current_user_optional
             result = await get_current_user_optional(mock_credentials)
 
         assert result is None
@@ -126,7 +126,7 @@ class TestRequireAdmin:
 
     async def test_require_admin_success(self, admin_user):
         """Test admin access granted"""
-        from src.api.middleware.auth_middleware import require_admin
+        from src.infrastructure.inbound.api.middleware.auth_middleware import require_admin
         result = await require_admin(admin_user)
 
         assert result.id == "admin-123"
@@ -134,7 +134,7 @@ class TestRequireAdmin:
 
     async def test_require_admin_forbidden(self, regular_user):
         """Test admin access denied for regular user"""
-        from src.api.middleware.auth_middleware import require_admin
+        from src.infrastructure.inbound.api.middleware.auth_middleware import require_admin
         with pytest.raises(HTTPException) as exc_info:
             await require_admin(regular_user)
 

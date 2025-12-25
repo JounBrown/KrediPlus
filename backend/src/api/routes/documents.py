@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List, Union
 
-from src.api.middleware.auth_middleware import get_current_user
+from src.infrastructure.inbound.api.middleware.auth_middleware import get_current_user
 from src.application.services.client_document_service import ClientDocumentService
 from src.application.dtos.client_document_dtos import ClientDocumentResponse
 from src.infrastructure.adapters.database.connection import get_db_session

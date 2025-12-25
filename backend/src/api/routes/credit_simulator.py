@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.api.middleware.auth_middleware import get_current_user, require_admin
+from src.infrastructure.inbound.api.middleware.auth_middleware import get_current_user, require_admin
 from src.application.services.credit_simulator_service import CreditSimulatorService
 from src.application.dtos.credit_simulator_dtos import (
     SimulateCreditRequest,
