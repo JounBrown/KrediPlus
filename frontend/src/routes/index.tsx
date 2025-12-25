@@ -14,7 +14,7 @@ function IndexPage() {
   return (
     <AppLayout headerActive="home" mainClassName="space-y-16 pb-16">
       {/* Hero Section - Split Layout */}
-      <section id="clientes" className="bg-gradient-to-br from-[#0d2f62] to-[#1a4a8a] py-12 lg:py-20">
+      <section id="clientes" className="bg-gradient-to-br from-[#0d2f62] to-[#1a4a8a] pt-20 pb-12 lg:py-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid gap-10 lg:grid-cols-[1.1fr,1fr] lg:items-center lg:gap-16">
             {/* Contenido */}

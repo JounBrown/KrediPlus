@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -9,48 +9,60 @@ interface SiteHeaderProps {
   active?: 'home' | 'admin'
 }
 
-const navAnchorClasses =
-  'hover:text-[#0d2f62] transition-colors text-sm font-medium text-slate-700'
-
 const mobileNavClasses =
   'block py-3 text-base font-medium text-slate-700 hover:text-[#f26522] transition-colors'
 
 export function SiteHeader({ active = 'home' }: SiteHeaderProps) {
   const user = useAuthStore((state) => state.user)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isAtTop, setIsAtTop] = useState(true)
+
+  useEffect(() => {
+    const handleScroll = () => setIsAtTop(window.scrollY < 10)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const linkClasses = cn(
+    'hover:text-[#f26522] transition-colors text-sm font-medium',
+    isAtTop ? 'text-white' : 'text-slate-700'
+  )
 
   return (
-    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur shadow-sm">
+    <header
+      className={cn(
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        isAtTop ? 'bg-transparent' : 'bg-white/70 shadow-md backdrop-blur-lg',
+      )}
+    >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
         <a href="/" className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-[#f26522]">
             <span className="text-xl font-black">K</span>
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-semibold text-slate-500">KrediPlus</p>
-            <p className="text-base font-bold text-[#0d2f62]">Soluciones financieras</p>
+            <p className={cn('text-sm font-semibold', isAtTop ? 'text-white/80' : 'text-slate-500')}>KrediPlus</p>
+            <p className={cn('text-base font-bold', isAtTop ? 'text-white' : 'text-[#0d2f62]')}>Soluciones financieras</p>
           </div>
         </a>
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-6 md:flex">
-          {/* <a className="flex items-center gap-1 text-[#f26522] text-sm font-semibold" href="/#clientes">
-            <Users2 className="h-4 w-4" /> Clientes 500+
-          </a> */}
-          <a href="/#simulador" className={navAnchorClasses}>
+          <a href="/#simulador" className={linkClasses}>
             Simulador
           </a>
-          <a href="/#condiciones" className={navAnchorClasses}>
+          <a href="/#condiciones" className={linkClasses}>
             Condiciones
           </a>
-          <a href="/#quienes" className={navAnchorClasses}>
+          <a href="/#quienes" className={linkClasses}>
             ¿Quiénes Somos?
           </a>
           {user ? (
             <Link
               to="/admin"
               className={cn(
-                navAnchorClasses,
+                linkClasses,
                 active === 'admin' ? 'text-[#f26522] font-semibold' : undefined,
               )}
             >
@@ -66,7 +78,10 @@ export function SiteHeader({ active = 'home' }: SiteHeaderProps) {
 
           {/* Mobile hamburger */}
           <button
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 md:hidden"
+            className={cn(
+              'flex h-10 w-10 items-center justify-center rounded-lg md:hidden',
+              isAtTop ? 'text-white hover:bg-white/20' : 'text-slate-700 hover:bg-slate-100'
+            )}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
           >
