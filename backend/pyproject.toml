@@ -35,7 +35,8 @@ dev = [
     "httpx (>=0.24.0,<0.29.0)",
     "black (>=25.11.0,<26.0.0)",
     "mypy (>=1.18.2,<2.0.0)",
-    "pytest-cov (>=4.0.0,<6.0.0)"
+    "pytest-cov (>=4.0.0,<6.0.0)",
+    "psutil (>=7.2.0,<8.0.0)"
 ]
 
 # ============================================================================
@@ -49,7 +50,8 @@ python_functions = ["test_*"]
 addopts = "-v --tb=short"
 markers = [
     "asyncio: mark test as async",
-    "slow: mark test as slow running"
+    "slow: mark test as slow running",
+    "performance: mark test as performance test"
 ]
 filterwarnings = [
     "ignore::DeprecationWarning",
