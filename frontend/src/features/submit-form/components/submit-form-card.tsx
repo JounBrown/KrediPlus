@@ -1,16 +1,9 @@
 import { useState } from 'react'
-import { ShieldCheck, CalendarIcon, Check, AlertCircle } from 'lucide-react'
+import { ShieldCheck, Check, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useSubmitForm } from '../hooks/use-submit-form'
 import type { SubmitFormPayload } from '../types/loan-application'
 import { useCreateLoanApplication } from '@/features/loan-applications/hooks/use-create-loan-application'
@@ -26,17 +19,6 @@ type SubmitFormCardProps = {
   defaultEstado?: string
 }
 
-const convenioOptions = [
-  'Colpensiones',
-  'Colfondos',
-  'FOPEP',
-  'Porvenir',
-  'Fiduprevisora',
-  'CASUR',
-  'CREMIL',
-  'Sin convenio',
-].map((option) => ({ value: option, label: option }))
-
 export function SubmitFormCard({
   className,
   title = '¡Toma el control de tu vida financiera!',
@@ -47,13 +29,11 @@ export function SubmitFormCard({
   defaultPlazo = 6,
   defaultEstado = 'pendiente',
 }: SubmitFormCardProps) {
-  const [convenio, setConvenio] = useState<string | undefined>(undefined)
   const [policyAccepted, setPolicyAccepted] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const loanApplicationMutation = useCreateLoanApplication({
     onSuccess: () => {
       setFeedback({ type: 'success', message: 'Solicitud enviada correctamente. Te contactaremos pronto.' })
-      setConvenio(undefined)
       setPolicyAccepted(false)
     },
     onError: (error) => {
