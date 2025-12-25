@@ -8,7 +8,7 @@ from decimal import Decimal
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.routes.clients import (
+from src.infrastructure.inbound.api.routes.clients import (
     create_client,
     get_client,
     list_clients,
@@ -346,7 +346,7 @@ class TestCreateCreditForClient:
         mock_db = AsyncMock(spec=AsyncSession)
         
         # Act & Assert with patches
-        with patch('src.api.routes.clients.get_client_service') as mock_get_client_service, \
+        with patch('src.infrastructure.inbound.api.routes.clients.get_client_service') as mock_get_client_service, \
              patch('src.application.services.credit_service.CreditService') as mock_credit_service_class, \
              patch('src.infrastructure.adapters.database.credit_repository.SupabaseCreditRepository') as mock_credit_repo:
             
@@ -382,7 +382,7 @@ class TestCreateCreditForClient:
         mock_db = AsyncMock(spec=AsyncSession)
         
         # Act & Assert
-        with patch('src.api.routes.clients.get_client_service') as mock_get_client_service:
+        with patch('src.infrastructure.inbound.api.routes.clients.get_client_service') as mock_get_client_service:
             mock_client_service = AsyncMock()
             mock_client_service.get_client_by_id.return_value = None
             mock_get_client_service.return_value = mock_client_service
@@ -559,7 +559,7 @@ class TestUpdateClientCredit:
         mock_db = AsyncMock(spec=AsyncSession)
         
         # Act & Assert
-        with patch('src.api.routes.clients.get_client_service') as mock_get_client_service, \
+        with patch('src.infrastructure.inbound.api.routes.clients.get_client_service') as mock_get_client_service, \
              patch('src.application.services.credit_service.CreditService') as mock_credit_service_class, \
              patch('src.infrastructure.adapters.database.credit_repository.SupabaseCreditRepository'):
             
@@ -617,7 +617,7 @@ class TestUpdateClientCredit:
         mock_db = AsyncMock(spec=AsyncSession)
         
         # Act & Assert
-        with patch('src.api.routes.clients.get_client_service') as mock_get_client_service, \
+        with patch('src.infrastructure.inbound.api.routes.clients.get_client_service') as mock_get_client_service, \
              patch('src.application.services.credit_service.CreditService') as mock_credit_service_class, \
              patch('src.infrastructure.adapters.database.credit_repository.SupabaseCreditRepository'):
             

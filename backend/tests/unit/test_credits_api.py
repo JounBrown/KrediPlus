@@ -8,7 +8,7 @@ from decimal import Decimal
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.routes.credits import (
+from src.infrastructure.inbound.api.routes.credits import (
     create_credit,
     get_credit,
     list_credits,

@@ -7,7 +7,7 @@ from datetime import date, datetime
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.routes.loan_applications import (
+from src.infrastructure.inbound.api.routes.loan_applications import (
     create_loan_application,
     get_loan_application,
     list_loan_applications,

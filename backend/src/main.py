@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.config import DEBUG, HOST, PORT, CORS_ORIGINS
-from src.api.routes.loan_applications import router as loan_applications_router
-from src.api.routes.clients import router as clients_router
-from src.api.routes.credits import router as credits_router
-from src.api.routes.credit_simulator import router as credit_simulator_router
-from src.api.routes.documents import router as documents_router
-from src.api.routes.rag_documents import router as rag_documents_router
-from src.api.routes.chat import router as chat_router
+from src.infrastructure.inbound.api.routes.loan_applications import router as loan_applications_router
+from src.infrastructure.inbound.api.routes.clients import router as clients_router
+from src.infrastructure.inbound.api.routes.credits import router as credits_router
+from src.infrastructure.inbound.api.routes.credit_simulator import router as credit_simulator_router
+from src.infrastructure.inbound.api.routes.documents import router as documents_router
+from src.infrastructure.inbound.api.routes.rag_documents import router as rag_documents_router
+from src.infrastructure.inbound.api.routes.chat import router as chat_router
 
 
 app = FastAPI(

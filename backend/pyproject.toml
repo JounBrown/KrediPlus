@@ -72,8 +72,8 @@ omit = [
     "src/*/__pycache__/*",
     "*/__init__.py",
     "src/main.py",
-    "src/api/routes/example_usage.py",
-    "src/api/routes/auth_example.py",
+    "src/infrastructure/inbound/api/routes/example_usage.py",
+
     "src/infrastructure/adapters/database/example_usage.py"
 ]
 
