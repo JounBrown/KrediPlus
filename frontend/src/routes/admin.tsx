@@ -79,7 +79,7 @@ function AdminPage() {
         headerActive="admin"
         showFooter={false}
         wrapperClassName="bg-[#f4f7fb]"
-        mainClassName="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 pb-16 pt-10"
+        mainClassName="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 pb-16 pt-24"
       >
         <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
           <AdminTabs activeTab={activeTab} onSelect={setActiveTab} />

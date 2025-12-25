@@ -24,16 +24,19 @@ export function SiteHeader({ active = 'home' }: SiteHeaderProps) {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // En admin siempre usar colores oscuros (fondo claro)
+  const useLight = isAtTop && active !== 'admin'
+
   const linkClasses = cn(
     'hover:text-[#f26522] transition-colors text-sm font-medium',
-    isAtTop ? 'text-white' : 'text-slate-700'
+    useLight ? 'text-white' : 'text-slate-700'
   )
 
   return (
     <header
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        isAtTop ? 'bg-transparent' : 'bg-white/70 shadow-md backdrop-blur-lg',
+        isAtTop && active !== 'admin' ? 'bg-transparent' : 'bg-white/70 shadow-md backdrop-blur-lg',
       )}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
@@ -42,8 +45,8 @@ export function SiteHeader({ active = 'home' }: SiteHeaderProps) {
             <span className="text-xl font-black">K</span>
           </div>
           <div className="leading-tight">
-            <p className={cn('text-sm font-semibold', isAtTop ? 'text-white/80' : 'text-slate-500')}>KrediPlus</p>
-            <p className={cn('text-base font-bold', isAtTop ? 'text-white' : 'text-[#0d2f62]')}>Soluciones financieras</p>
+            <p className={cn('text-sm font-semibold', useLight ? 'text-white/80' : 'text-slate-500')}>KrediPlus</p>
+            <p className={cn('text-base font-bold', useLight ? 'text-white' : 'text-[#0d2f62]')}>Soluciones financieras</p>
           </div>
         </a>
 
@@ -80,7 +83,7 @@ export function SiteHeader({ active = 'home' }: SiteHeaderProps) {
           <button
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-lg md:hidden',
-              isAtTop ? 'text-white hover:bg-white/20' : 'text-slate-700 hover:bg-slate-100'
+              useLight ? 'text-white hover:bg-white/20' : 'text-slate-700 hover:bg-slate-100'
             )}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
